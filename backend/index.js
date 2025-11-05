@@ -1,13 +1,27 @@
+const express = require("express");
+const path = require("path");
+
 const http = require("http");
 const { WebSocketServer } = require("ws");
 
 const url = require("url");
 const uuidv4 = require("uuid").v4;
 
-const server = http.createServer();
-const wsServer = new WebSocketServer({ server });
+// Express app stuff
+const app = express();
 const port = 8000;
 
+const buildPath = path.join(__dirname, "..", "frontend", "dist");
+app.use(express.static(buildPath));
+
+app.get("/*", (req, res) => {
+  res.sendFile(path.join(buildPath, "index.html"));
+});
+
+const server = http.createServer(app);
+
+// Websocket stuff
+const wsServer = new WebSocketServer({ noServer: true });
 const connections = {};
 const users = {};
 
@@ -58,6 +72,19 @@ wsServer.on("connection", (connection, request) => {
 
   connection.on("message", (message) => handleMessage(message, uuid));
   connection.on("close", () => handleClose(uuid));
+});
+
+server.on("upgrade", (request, socket, head) => {
+  const pathname = url.parse(request.url).pathname;
+
+  // Handle websocket requests
+  if (pathname === "/ws") {
+    wsServer.handleUpgrade(request, socket, head, (websocket) => {
+      wsServer.emit("connection", websocket, request);
+    });
+  } else {
+    socket.destroy;
+  }
 });
 
 server.listen(port, () => {
