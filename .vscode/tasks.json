@@ -1,0 +1,22 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Run Frontend",
+      "type": "shell",
+      "command": "cd frontend; npm run dev",
+      "problemMatcher": []
+    },
+    {
+      "label": "Run Backend",
+      "type": "shell",
+      "command": "cd backend; node index.js",
+      "problemMatcher": []
+    },
+    {
+      "label": "Run Dev Tasks",
+      "dependsOn": ["Run Frontend", "Run Backend"],
+      "problemMatcher": []
+    }
+  ]
+}
