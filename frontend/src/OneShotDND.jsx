@@ -17,7 +17,7 @@ export function OneShotDND({ username }) {
 
   const host = window.location.host;
 
-  const WS_URL = `${protocol}://${host}/ws`;
+  const WS_URL = `${protocol}//${host}/ws`;
 
   const { sendJsonMessage, lastJsonMessage } = useWebSocket(WS_URL, {
     share: true,
