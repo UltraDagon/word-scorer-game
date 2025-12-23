@@ -10,7 +10,7 @@
     {
       "label": "Run Backend",
       "type": "shell",
-      "command": "cd backend; node index.js",
+      "command": "cd backend; node index.ts",
       "problemMatcher": []
     },
     {

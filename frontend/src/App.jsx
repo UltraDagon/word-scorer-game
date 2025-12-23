@@ -1,8 +1,8 @@
 import { useState } from "react";
 import "./App.css";
 
-import { Login } from "./components/Login";
-import { OneShotDND } from "./OneShotDND";
+import { Login } from "./pages/Login";
+import { Game } from "./pages/Game";
 
 // Thanks to: https://www.youtube.com/watch?v=4Uwq0xB30JE
 // Note: remove the perfect cursors from packages
@@ -18,7 +18,7 @@ function App() {
 
   // If user is logged in
   return username ? (
-    <OneShotDND username={username} roomID={roomID} />
+    <Game username={username} roomID={roomID} />
   ) : (
     <>
       <Login onSubmit={login} />
