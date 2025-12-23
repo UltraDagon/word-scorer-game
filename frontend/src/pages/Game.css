@@ -1,0 +1,36 @@
+.game {
+  display: flexbox;
+
+  width: 100vw;
+  height: 100vh;
+}
+
+.game .board {
+  display: grid;
+  /* This allows the font size to scale with the container size */
+  container-type: inline-size;
+
+  width: 80vh;
+  max-width: 80vw;
+  aspect-ratio: 1;
+
+  justify-self: left;
+
+  grid-template-columns: repeat(15, 6.667%); /* 6.667% is 1/15 */
+  grid-template-rows: repeat(15, 6.667%);
+
+  background-color: orange;
+}
+
+.game .board .space {
+  background-color: aqua;
+}
+
+.game .board .space p {
+  line-height: 0;
+  text-align: center;
+  text-justify: center;
+
+  font-size: 4cqw;
+  font-weight: 900;
+}

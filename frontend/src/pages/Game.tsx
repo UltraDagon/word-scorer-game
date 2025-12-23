@@ -3,6 +3,7 @@ import { useEffect, useRef } from "react";
 import throttle from "lodash.throttle";
 
 import { UserList } from "../components/UserList";
+import "./Game.css";
 
 interface User {
   username: string;
@@ -22,8 +23,17 @@ interface GameProps {
   username: string;
 }
 
+interface Space {
+  label: string;
+}
+
 export function Game({ roomID, username }: GameProps) {
   let WS_URL;
+  let board: Array<Space> = [];
+  for (let i = 0; i < 225; i++) {
+    const s: Space = { label: i.toString() };
+    board.push(s);
+  }
 
   if (import.meta.env.DEV) {
     WS_URL = import.meta.env.VITE_DEV_WS_URL || "ws://localhost:8000/ws";
@@ -60,9 +70,16 @@ export function Game({ roomID, username }: GameProps) {
 
   if (lastJsonMessage) {
     return (
-      <>
+      <div className="game">
+        <div className="board">
+          {board.map((space) => (
+            <div className="space">
+              <p>{space.label}</p>
+            </div>
+          ))}
+        </div>
         <UserList users={lastJsonMessage.users || {}} />
-      </>
+      </div>
     );
   }
 }
