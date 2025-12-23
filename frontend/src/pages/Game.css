@@ -19,18 +19,57 @@
   grid-template-columns: repeat(15, 6.667%); /* 6.667% is 1/15 */
   grid-template-rows: repeat(15, 6.667%);
 
-  background-color: orange;
+  background-color: white;
 }
 
 .game .board .space {
-  background-color: aqua;
+  background-color: green;
+  margin: 1px;
+  border-radius: 3px;
+}
+
+.game .board .space.double-letter {
+  background-color: lightblue;
+}
+
+.game .board .space.double-word {
+  background-color: yellow;
+}
+
+.game .board .space.triple-letter {
+  background-color: blue;
+}
+
+.game .board .space.triple-word {
+  background-color: red;
 }
 
 .game .board .space p {
+  height: 50%;
+
+  padding-top: 50%;
+  margin: 0 0 0 0;
+
   line-height: 0;
+
   text-align: center;
   text-justify: center;
 
-  font-size: 4cqw;
+  font-family: monospace;
+  font-size: 5cqw;
   font-weight: 900;
+
+  color: black;
+}
+
+.game .board .space.effect p {
+  width: 80%;
+  height: 40%;
+
+  padding-top: 40%;
+  margin: 10% 0 0 10%;
+}
+
+.game .board .space.tile p {
+  background-color: peachpuff;
 }

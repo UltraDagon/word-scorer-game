@@ -24,14 +24,18 @@ interface GameProps {
 }
 
 interface Space {
-  label: string;
+  letter: string | undefined;
+  effect: string | undefined;
 }
 
 export function Game({ roomID, username }: GameProps) {
   let WS_URL;
   let board: Array<Space> = [];
   for (let i = 0; i < 225; i++) {
-    const s: Space = { label: i.toString() };
+    const s: Space = {
+      letter: i % 5 == 0 ? "X" : undefined,
+      effect: i % 8 == 4 ? "double-letter" : undefined,
+    };
     board.push(s);
   }
 
@@ -73,8 +77,14 @@ export function Game({ roomID, username }: GameProps) {
       <div className="game">
         <div className="board">
           {board.map((space) => (
-            <div className="space">
-              <p>{space.label}</p>
+            <div
+              className={
+                "space" +
+                (space.letter ? " tile" : "") +
+                (space.effect ? " effect " + space.effect : "")
+              }
+            >
+              <p>{space.letter}</p>
             </div>
           ))}
         </div>
