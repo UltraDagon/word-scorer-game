@@ -26,8 +26,8 @@ interface Room {
 const app = express();
 const port = process.env.PORT || 8000;
 
-const __dirname = path.resolve();
-const buildPath = path.join(__dirname, "..", "frontend", "dist");
+const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
+const buildPath = path.resolve(__dirname, "../frontend/dist");
 app.use(express.static(buildPath));
 
 app.get("/*", (req: Request, res: Response) => {
