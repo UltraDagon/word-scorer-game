@@ -24,3 +24,9 @@ export interface Space {
   letter?: string | undefined;
   effect?: string | undefined;
 }
+
+// WebSocket Message
+export interface WSMessage {
+  message: string;
+  data: any;
+}

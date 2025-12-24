@@ -1,4 +1,4 @@
-import express from "express";
+import express, { raw } from "express";
 import type { Request, Response } from "express";
 import path from "path";
 import http from "http";
@@ -6,7 +6,7 @@ import { WebSocketServer, WebSocket } from "ws";
 import { v4 as uuidv4 } from "uuid";
 import url from "url";
 
-import { User, GameData, Room } from "./interfaces";
+import { User, GameData, Room, WSMessage } from "./interfaces.ts";
 
 const app = express();
 const port = process.env.PORT || 8000;
@@ -48,16 +48,27 @@ const broadcastToRoom = (roomID: string) => {
 };
 
 const handleMessage = (bytes: Buffer, uuid: string) => {
-  const message = JSON.parse(bytes.toString());
   const roomID = connections[uuid].room;
   const user = rooms[roomID].users[uuid];
+  const rawMessage: WSMessage = JSON.parse(bytes.toString());
 
-  user.state = message;
+  const message: string = rawMessage.message;
+  const data: any = rawMessage.data;
+
+  // Ensure that the data format is known before adding a new case.
+  switch (message) {
+    case "page_loaded":
+      user.state = { cursorX: -1, cursorY: -1 };
+      break;
+    case "mouse_move":
+      user.state = { cursorX: data[0], cursorY: data[1] };
+      break;
+    default:
+      console.log('[WARNING] Unknown message: "' + message + '"');
+      break;
+  }
+
   broadcastToRoom(roomID);
-
-  // console.log(
-  //   `${user.username} updated their state: ${JSON.stringify(user.state)}`
-  // );
 };
 
 const handleClose = (uuid: string) => {

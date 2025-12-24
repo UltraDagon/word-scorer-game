@@ -5,7 +5,13 @@ import throttle from "lodash.throttle";
 import { UserList } from "../components/UserList";
 import "./Game.css";
 
-import { User, GameData, GameProps, Space } from "../../../backend/interfaces";
+import {
+  User,
+  GameData,
+  GameProps,
+  Space,
+  WSMessage,
+} from "../../../backend/interfaces";
 
 function generateBoard(): Array<Space> {
   // Create default board
@@ -76,16 +82,15 @@ export function Game({ roomID, username }: GameProps) {
 
   useEffect(() => {
     // Initial Login Message
-    sendJsonMessage({
-      cursorX: -1,
-      cursorY: -1,
-    });
+    const message: WSMessage = { message: "page_loaded", data: undefined };
+    sendJsonMessage(message);
 
     window.addEventListener("mousemove", (e) => {
-      sendJsonMessageThrottled.current({
-        cursorX: e.clientX,
-        cursorY: e.clientY,
-      });
+      const message: WSMessage = {
+        message: "mouse_move",
+        data: [e.clientX, e.clientY],
+      };
+      sendJsonMessageThrottled.current(message);
     });
   }, []);
 
