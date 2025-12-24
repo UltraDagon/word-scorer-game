@@ -5,28 +5,7 @@ import throttle from "lodash.throttle";
 import { UserList } from "../components/UserList";
 import "./Game.css";
 
-interface User {
-  username: string;
-  state: {
-    cursorX: number;
-    cursorY: number;
-  };
-}
-
-interface GameData {
-  roomID: string;
-  users?: Record<string, User>;
-}
-
-interface GameProps {
-  roomID: string;
-  username: string;
-}
-
-interface Space {
-  letter?: string | undefined;
-  effect?: string | undefined;
-}
+import { User, GameData, GameProps, Space } from "../../../backend/interfaces";
 
 function generateBoard(): Array<Space> {
   // Create default board

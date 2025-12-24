@@ -6,22 +6,7 @@ import { WebSocketServer, WebSocket } from "ws";
 import { v4 as uuidv4 } from "uuid";
 import url from "url";
 
-interface User {
-  username: string;
-  state: {
-    cursorX: number;
-    cursorY: number;
-  };
-}
-
-interface GameData {
-  roomID: string;
-  users: Record<string, User>;
-}
-
-interface Room {
-  users: Record<string, User>;
-}
+import { User, GameData, Room } from "./interfaces";
 
 const app = express();
 const port = process.env.PORT || 8000;
