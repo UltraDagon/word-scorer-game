@@ -13,54 +13,8 @@ import {
   WSMessage,
 } from "../../../backend/interfaces";
 
-function generateBoard(): Array<Space> {
-  // Create default board
-  const board: Array<Space> = [];
-  for (let i = 0; i < 225; i++) {
-    let x = i % 15;
-    let y = Math.floor(i / 15);
-
-    const space: Space = { letter: undefined, effect: undefined };
-
-    if (x % 7 == 0 && y % 7 == 0 && !(x == 7 && y == 7)) {
-      space.effect = "triple-word";
-    } else if (
-      x % 4 == 1 &&
-      y % 4 == 1 &&
-      !(Math.abs(7 - x) == 6 && Math.abs(7 - y) == 6)
-    ) {
-      space.effect = "triple-letter";
-    } else if (
-      Math.abs(7 - x) * Math.abs(7 - y) == 1 ||
-      Math.abs(7 - x) * Math.abs(7 - y) == 5 ||
-      Math.abs(7 - x) * Math.abs(7 - y) == 28 ||
-      (Math.abs(7 - x) == 4 && y == 7) ||
-      (Math.abs(7 - y) == 4 && x == 7)
-    ) {
-      space.effect = "double-letter";
-    } else if (x == y || x == 14 - y) {
-      space.effect = "double-word";
-    }
-
-    board.push(space);
-
-    board;
-  }
-
-  return board;
-}
-
 export function Game({ roomID, username }: GameProps) {
   let WS_URL;
-  let board: Array<Space> = generateBoard();
-  board[112] = { letter: "H", effect: board[112]!.effect };
-  board[113] = { letter: "E", effect: board[113]!.effect };
-  board[114] = { letter: "L", effect: board[114]!.effect };
-  board[115] = { letter: "L", effect: board[115]!.effect };
-  board[116] = { letter: "O", effect: board[116]!.effect };
-  board[117] = { letter: "K", effect: board[117]!.effect };
-  board[118] = { letter: "A", effect: board[118]!.effect };
-  board[119] = { letter: "T", effect: board[119]!.effect };
 
   if (import.meta.env.DEV) {
     WS_URL = import.meta.env.VITE_DEV_WS_URL || "ws://localhost:8000/ws";
@@ -82,19 +36,33 @@ export function Game({ roomID, username }: GameProps) {
 
   useEffect(() => {
     // Initial Login Message
-    const message: WSMessage = { message: "page_loaded", data: undefined };
-    sendJsonMessage(message);
+    messageAPI("page_loaded");
 
     window.addEventListener("mousemove", (e) => {
-      const message: WSMessage = {
-        message: "mouse_move",
-        data: [e.clientX, e.clientY],
-      };
-      sendJsonMessageThrottled.current(message);
+      messageAPI("mouse_move", [e.clientX, e.clientY], true);
     });
   }, []);
 
+  function messageAPI(
+    _message: string,
+    _data: any = undefined,
+    throttled: boolean = false
+  ) {
+    const message: WSMessage = {
+      message: _message,
+      data: _data,
+    };
+
+    if (throttled) {
+      sendJsonMessageThrottled.current(message);
+    } else {
+      sendJsonMessage(message);
+    }
+  }
+
   if (lastJsonMessage) {
+    let board = lastJsonMessage.board;
+
     return (
       <div className="game">
         <div className="board">
@@ -110,8 +78,11 @@ export function Game({ roomID, username }: GameProps) {
             </div>
           ))}
         </div>
+        <button onClick={() => messageAPI("hello_world")}>Hello, World!</button>
         <UserList users={lastJsonMessage.users || {}} />
       </div>
     );
+  } else {
+    return <p>Loading...</p>;
   }
 }
