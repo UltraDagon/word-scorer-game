@@ -29,47 +29,60 @@
 }
 
 .game .board .space.double-letter {
+  color: blue;
   background-color: lightblue;
 }
 
 .game .board .space.double-word {
+  color: brown;
   background-color: yellow;
 }
 
 .game .board .space.triple-letter {
+  color: lightblue;
   background-color: blue;
 }
 
 .game .board .space.triple-word {
+  color: white;
   background-color: red;
 }
 
 .game .board .space p {
   height: 50%;
 
-  padding-top: 50%;
   margin: 0 0 0 0;
-
-  line-height: 0;
 
   text-align: center;
   text-justify: center;
 
   font-family: monospace;
-  font-size: 5cqw;
   font-weight: 900;
-
-  color: black;
 }
 
 .game .board .space.effect p {
   width: 80%;
   height: 40%;
 
-  padding-top: 40%;
+  padding-top: 20%;
   margin: 10% 0 0 10%;
+
+  line-height: 1;
+  font-size: 1.5cqw;
+  opacity: 0.7;
 }
 
 .game .board .space.tile p {
+  padding-top: 50%;
+  line-height: 0;
+
+  color: black;
+  font-size: 5cqw;
+  opacity: 1;
+
   background-color: peachpuff;
+}
+
+.game .board .space.tile.effect p {
+  padding-top: 40%;
 }

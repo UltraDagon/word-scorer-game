@@ -1,22 +1,17 @@
 import "./UserList.css";
 
-interface User {
-  username: string;
-  state: {
-    cursorX: number;
-    cursorY: number;
-  };
-}
+import { User } from "../../../backend/interfaces";
 
 interface props {
   users: Record<string, User>;
+  roomID: string;
 }
 
-export function UserList({ users }: props) {
+export function UserList({ users, roomID }: props) {
   return (
     <>
       <div className="user-list">
-        <p>Lobby:</p>
+        <p>Lobby "{roomID}":</p>
         <ul>
           {
             // user[0] is uuid, user[1] is User

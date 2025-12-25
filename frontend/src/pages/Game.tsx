@@ -29,7 +29,7 @@ export function Game({ roomID, username }: GameProps) {
     queryParams: { username, roomID },
   });
 
-  const THROTTLE_MS = 50;
+  const THROTTLE_MS = 500;
   const sendJsonMessageThrottled = useRef(
     throttle(sendJsonMessage, THROTTLE_MS)
   );
@@ -74,12 +74,19 @@ export function Game({ roomID, username }: GameProps) {
                 (space.effect ? " effect " + space.effect : "")
               }
             >
-              <p>{space.letter}</p>
+              <p>
+                {space.letter
+                  ? space.letter
+                  : space.effect?.replace("-", " ").toUpperCase()}
+              </p>
             </div>
           ))}
         </div>
         <button onClick={() => messageAPI("hello_world")}>Hello, World!</button>
-        <UserList users={lastJsonMessage.users || {}} />
+        <UserList
+          users={lastJsonMessage.users || {}}
+          roomID={lastJsonMessage.roomID}
+        />
       </div>
     );
   } else {
