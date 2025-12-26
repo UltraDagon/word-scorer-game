@@ -75,6 +75,8 @@ export function Game({ roomID, username }: GameProps) {
     // If tile is selected, attempt to place at board pos or replace tile at board pos
     if (selectedTileIndex !== -1) {
       newMap.set(boardPos, selectedTileIndex);
+      // Reset selected tile
+      selectTileIndex(-1);
     }
     // If no tile is selected, attempt to take back tile placed during the current turn
     else {
@@ -100,13 +102,22 @@ export function Game({ roomID, username }: GameProps) {
               data-index={index}
               className={
                 "space" +
-                (space.letter ? " tile" : "") +
+                (boardPosToHeldTileMap.get(index) !== undefined
+                  ? " selected"
+                  : "") +
+                (space.letter || boardPosToHeldTileMap.get(index) !== undefined
+                  ? " tile"
+                  : "") +
                 (space.effect ? " effect " + space.effect : "")
               }
             >
               <p>
                 {space.letter
                   ? space.letter
+                  : boardPosToHeldTileMap.get(index) !== undefined
+                  ? lastJsonMessage.userData.tiles[
+                      boardPosToHeldTileMap.get(index)!
+                    ]
                   : space.effect?.replace("-", " ").toUpperCase()}
               </p>
             </div>
@@ -120,7 +131,11 @@ export function Game({ roomID, username }: GameProps) {
             <div
               key={index}
               className={
-                "tile" + (index == selectedTileIndex ? " selected" : "")
+                "tile" +
+                (index == selectedTileIndex ? " selected" : "") +
+                (boardPosToHeldTileMap.values().some((value) => value === index)
+                  ? " placed"
+                  : "")
               }
               onClick={() =>
                 selectTileIndex(index != selectedTileIndex ? index : -1)
