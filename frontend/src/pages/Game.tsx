@@ -1,5 +1,5 @@
 import useWebSocket from "react-use-websocket";
-import { useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import throttle from "lodash.throttle";
 
 import { UserList } from "../components/UserList";
@@ -14,13 +14,17 @@ import {
 } from "../../../backend/interfaces";
 
 export function Game({ roomID, username }: GameProps) {
-  let WS_URL;
+  const [selectedTileIndex, selectTileIndex] = useState(-1);
+  const [boardPosToHeldTileMap, setBoardPosToHeldTileMap] = useState(
+    new Map<number, number>()
+  );
 
+  let WS_URL;
   if (import.meta.env.DEV) {
     WS_URL = import.meta.env.VITE_DEV_WS_URL || "ws://localhost:8000/ws";
   } else {
-    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-    const host = window.location.host;
+    let protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+    let host = window.location.host;
     WS_URL = `${protocol}//${host}/ws`;
   }
 
@@ -29,7 +33,7 @@ export function Game({ roomID, username }: GameProps) {
     queryParams: { username, roomID },
   });
 
-  const THROTTLE_MS = 500;
+  const THROTTLE_MS = 100;
   const sendJsonMessageThrottled = useRef(
     throttle(sendJsonMessage, THROTTLE_MS)
   );
@@ -60,14 +64,40 @@ export function Game({ roomID, username }: GameProps) {
     }
   }
 
+  function handleBoardClick(e: React.MouseEvent<HTMLDivElement, MouseEvent>) {
+    let target = (e.target as HTMLElement).closest(".space");
+    // If no target was found, return
+    if (!target) return;
+    let boardPos = Number(target.getAttribute("data-index") || "0");
+
+    // If not user's turn, return
+    const newMap = new Map(boardPosToHeldTileMap);
+    // If tile is selected, attempt to place at board pos or replace tile at board pos
+    if (selectedTileIndex !== -1) {
+      newMap.set(boardPos, selectedTileIndex);
+    }
+    // If no tile is selected, attempt to take back tile placed during the current turn
+    else {
+    }
+    setBoardPosToHeldTileMap(newMap);
+  }
+
+  // Ensure connection to server is established
   if (lastJsonMessage) {
     let board = lastJsonMessage.board;
 
     return (
       <div className="game">
-        <div className="board">
-          {board.map((space) => (
+        <div
+          className="board"
+          onClick={(e) => {
+            handleBoardClick(e);
+          }}
+        >
+          {board.map((space, index) => (
             <div
+              key={index}
+              data-index={index}
               className={
                 "space" +
                 (space.letter ? " tile" : "") +
@@ -83,8 +113,26 @@ export function Game({ roomID, username }: GameProps) {
           ))}
         </div>
         <button onClick={() => messageAPI("hello_world")}>Hello, World!</button>
+
+        <p>{lastJsonMessage.userData.tiles.length > 0 ? "Held Tiles:" : ""}</p>
+        <div className="held-tiles">
+          {lastJsonMessage.userData.tiles.map((tile, index) => (
+            <div
+              key={index}
+              className={
+                "tile" + (index == selectedTileIndex ? " selected" : "")
+              }
+              onClick={() =>
+                selectTileIndex(index != selectedTileIndex ? index : -1)
+              }
+            >
+              <p>{tile}</p>
+            </div>
+          ))}
+        </div>
+        <p>{JSON.stringify(Object.fromEntries(boardPosToHeldTileMap))}</p>
         <UserList
-          users={lastJsonMessage.users || {}}
+          users={lastJsonMessage.users || []}
           roomID={lastJsonMessage.roomID}
         />
       </div>

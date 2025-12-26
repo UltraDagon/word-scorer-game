@@ -14,7 +14,7 @@ export function UserList({ users, roomID }: props) {
         <p>Lobby "{roomID}":</p>
         <ul>
           {
-            // user[0] is uuid, user[1] is User
+            // user[0] is uuid, user[1] is User TODO: possible security issue?
             Object.entries(users).map((user) => {
               return (
                 <li key={user[0]}>

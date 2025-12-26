@@ -7,6 +7,7 @@ import { v4 as uuidv4 } from "uuid";
 import url from "url";
 
 import { User, GameData, Room, WSMessage, Space } from "./interfaces.ts";
+import { randomInt } from "crypto";
 
 const app = express();
 const port = process.env.PORT || 8000;
@@ -36,12 +37,19 @@ const broadcastToRoom = (roomID: string) => {
     roomID: roomID,
     users: room.users,
     board: room.board,
+    // UserData default values, they will be replaced later
+    userData: { tiles: [] },
   };
-
-  const message = JSON.stringify(data);
 
   Object.keys(room.users).forEach((uuid) => {
     const conn = connections[uuid];
+    const user = rooms[roomID].users[uuid];
+
+    // Add user-specific data
+    data.userData = { tiles: user.tiles };
+
+    // Stringify and send message
+    const message = JSON.stringify(data);
     if (conn && conn.socket.readyState === WebSocket.OPEN) {
       conn.socket.send(message);
     }
@@ -68,11 +76,7 @@ const handleMessage = (bytes: Buffer, uuid: string) => {
       break;
 
     case "hello_world":
-      rooms[roomID].board[112].letter = "H";
-      rooms[roomID].board[113].letter = "E";
-      rooms[roomID].board[114].letter = "L";
-      rooms[roomID].board[115].letter = "L";
-      rooms[roomID].board[116].letter = "O";
+      refillTiles(user.tiles, user.tileLimit);
       break;
 
     default:
@@ -125,13 +129,15 @@ wsServer.on(
       console.log(`Created new room [${cleanedRoomID}]!`);
     }
 
-    // Join the room
+    // Join the room and initialize user data
     rooms[cleanedRoomID].users[uuid] = {
       username: cleanedUsername,
       state: {
         cursorX: -1,
         cursorY: -1,
       },
+      tileLimit: 7,
+      tiles: [],
     };
 
     console.log(
@@ -197,4 +203,16 @@ function generateBoard(): Array<Space> {
   }
 
   return board;
+}
+
+function refillTiles(tiles: Array<string>, tileLimit: number): void {
+  let tileBag =
+    "AAAAAAAAABBCCDDDDEEEEEEEEEEEEFFGGGHHIIIIIIIIIJKLLLLMMNNNNNNOOOOOOOOPPQRRRRRRSSSSTTTTTTUUUUVVWWXYYZ??".split(
+      ""
+    );
+
+  while (tiles.length < tileLimit) {
+    let randomIndex = randomInt(tileBag.length);
+    tiles.push(tileBag[randomIndex]);
+  }
 }
