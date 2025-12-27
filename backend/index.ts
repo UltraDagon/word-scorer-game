@@ -78,6 +78,15 @@ const handleMessage = (bytes: Buffer, uuid: string) => {
 
     case "play_turn":
       // Todo: if not users turn, break early
+      console.log(data);
+      for (let i = 0; i < data.length; i++) {
+        let boardPos = data[i][0];
+        let tile = user.tiles[data[i][1]];
+
+        rooms[roomID].board[boardPos].letter = tile;
+        rooms[roomID].board[boardPos].owner = uuid;
+      }
+      // Todo: remove tiles used
       refillTiles(user.tiles, user.tileLimit);
       break;
 
@@ -141,10 +150,6 @@ wsServer.on(
       tileLimit: 7,
       tiles: [],
     };
-
-    console.log(
-      `Room [${cleanedRoomID}]: ${JSON.stringify(rooms[cleanedRoomID])}`
-    );
 
     connection.on("message", (message: Buffer) => handleMessage(message, uuid));
     connection.on("close", () => handleClose(uuid));

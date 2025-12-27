@@ -64,6 +64,11 @@ export function Game({ roomID, username }: GameProps) {
     }
   }
 
+  function endTurn() {
+    messageAPI("play_turn", [...boardPosToHeldTileMap.entries()]);
+    setBoardPosToHeldTileMap(new Map<number, number>());
+  }
+
   function handleBoardClick(e: React.MouseEvent<HTMLDivElement, MouseEvent>) {
     let target = (e.target as HTMLElement).closest(".space");
     // If no target was found, return
@@ -148,11 +153,13 @@ export function Game({ roomID, username }: GameProps) {
           ))}
         </div>
 
+        <button onClick={() => endTurn()}>
+          <h1>End turn</h1>
+        </button>
+
         <button onClick={() => messageAPI("page_loaded")}>
           <h1>Re-send page loaded</h1>
         </button>
-
-        <button> </button>
 
         <p>{JSON.stringify(Object.fromEntries(boardPosToHeldTileMap))}</p>
         <UserList
