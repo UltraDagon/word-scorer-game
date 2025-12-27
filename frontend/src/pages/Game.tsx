@@ -70,7 +70,8 @@ export function Game({ roomID, username }: GameProps) {
     if (!target) return;
     let boardPos = Number(target.getAttribute("data-index") || "0");
 
-    // If not user's turn, return
+    // TODO: If not user's turn, return
+    // TODO: If space is taken up on gameData, return
     const newMap = new Map(boardPosToHeldTileMap);
     // If tile is selected, attempt to place at board pos or replace tile at board pos
     if (selectedTileIndex !== -1) {
@@ -80,6 +81,8 @@ export function Game({ roomID, username }: GameProps) {
     }
     // If no tile is selected, attempt to take back tile placed during the current turn
     else {
+      // Remove board pos if contained in map
+      newMap.delete(boardPos);
     }
     setBoardPosToHeldTileMap(newMap);
   }
@@ -123,7 +126,6 @@ export function Game({ roomID, username }: GameProps) {
             </div>
           ))}
         </div>
-        <button onClick={() => messageAPI("hello_world")}>Hello, World!</button>
 
         <p>{lastJsonMessage.userData.tiles.length > 0 ? "Held Tiles:" : ""}</p>
         <div className="held-tiles">
@@ -145,6 +147,13 @@ export function Game({ roomID, username }: GameProps) {
             </div>
           ))}
         </div>
+
+        <button onClick={() => messageAPI("page_loaded")}>
+          <h1>Re-send page loaded</h1>
+        </button>
+
+        <button> </button>
+
         <p>{JSON.stringify(Object.fromEntries(boardPosToHeldTileMap))}</p>
         <UserList
           users={lastJsonMessage.users || []}

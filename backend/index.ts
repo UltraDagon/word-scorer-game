@@ -68,6 +68,7 @@ const handleMessage = (bytes: Buffer, uuid: string) => {
   switch (message) {
     case "page_loaded":
       user.state = { cursorX: -1, cursorY: -1 };
+      refillTiles(user.tiles, user.tileLimit);
       break;
 
     // Todo: Remove mouse_move, it was only for testing
@@ -75,7 +76,8 @@ const handleMessage = (bytes: Buffer, uuid: string) => {
       user.state = { cursorX: data[0], cursorY: data[1] };
       break;
 
-    case "hello_world":
+    case "play_turn":
+      // Todo: if not users turn, break early
       refillTiles(user.tiles, user.tileLimit);
       break;
 
