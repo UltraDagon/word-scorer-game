@@ -79,14 +79,25 @@ const handleMessage = (bytes: Buffer, uuid: string) => {
     case "play_turn":
       // Todo: if not users turn, break early
       console.log(data);
+
+      // Update board spaces to have played tiles
       for (let i = 0; i < data.length; i++) {
         let boardPos = data[i][0];
         let tile = user.tiles[data[i][1]];
 
         rooms[roomID].board[boardPos].letter = tile;
         rooms[roomID].board[boardPos].owner = uuid;
+
+        // Set tile to blank space to be later removed
+        user.tiles[data[i][1]] = " ";
       }
-      // Todo: remove tiles used
+
+      // Remove all used tiles
+      for (let i = user.tiles.length - 1; i >= 0; i--) {
+        if (user.tiles[i] === " ") user.tiles.splice(i, 1);
+      }
+
+      // Refill tiles
       refillTiles(user.tiles, user.tileLimit);
       break;
 
