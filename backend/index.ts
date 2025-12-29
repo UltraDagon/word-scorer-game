@@ -78,7 +78,8 @@ const handleMessage = (bytes: Buffer, uuid: string) => {
 
     case "play_turn":
       // Todo: if not users turn, break early
-      console.log(data);
+
+      // Todo: ensure move is valid (played tiles are connected to previously played tiles)
 
       // Update board spaces to have played tiles
       for (let i = 0; i < data.length; i++) {

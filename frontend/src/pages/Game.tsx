@@ -69,6 +69,70 @@ export function Game({ roomID, username }: GameProps) {
     setBoardPosToHeldTileMap(new Map<number, number>());
   }
 
+  // TODO: Consider allowing placement anywhere but not allowing for the turn to be played
+  function validBoardPlacement(boardPos: number): boolean {
+    // TODO: You cannot place a piece on a spot where another piece exists
+
+    // Piece is always valid if it is in the center of the board
+    if (boardPos === 112) {
+      return true;
+    }
+
+    // If the second tile is played, make sure it is in the same row or column as the first tile
+    if (boardPosToHeldTileMap.size === 1) {
+      let firstTile = boardPosToHeldTileMap.keys().next().value || -1;
+
+      let baseColumn = firstTile % 15;
+      let baseRow = (firstTile - baseColumn) / 15;
+
+      let newColumn = boardPos % 15;
+      let newRow = (boardPos - newColumn) / 15;
+
+      if (baseColumn !== newColumn && baseRow !== newRow) return false;
+    }
+    // All tiles past the first two should be in the same row or column as all other tiles
+    if (boardPosToHeldTileMap.size > 1) {
+      let firstTile = Number([...boardPosToHeldTileMap.entries()][0]![0]);
+      let secondTile = Number([...boardPosToHeldTileMap.entries()][1]![0]);
+
+      let firstColumn = firstTile % 15;
+      let firstRow = (firstTile - firstColumn) / 15;
+      let secondColumn = secondTile % 15;
+      let secondRow = (secondTile - secondColumn) / 15;
+
+      let newColumn = boardPos % 15;
+      let newRow = (boardPos - newColumn) / 15;
+
+      console.log(
+        `first: [${firstRow}, ${firstColumn}]\nsecond: [${secondRow}, ${secondColumn}]\new: [${newRow}, ${newColumn}]`
+      );
+
+      // Ensure that the newly played tile falls into line with the first two played tiles
+      if (
+        !(
+          (firstColumn == secondColumn && firstColumn == newColumn) ||
+          (firstRow == secondRow && firstRow == newRow)
+        )
+      )
+        return false;
+    }
+
+    // Ensure played tile is adjacent to another tile
+    let adjacentOffsets: Array<number> = [1, -1, 15, -15];
+    for (let x of adjacentOffsets) {
+      let pos: number = boardPos + x;
+
+      if (
+        boardPosToHeldTileMap.get(pos) !== undefined ||
+        lastJsonMessage.board[pos]?.letter !== undefined
+      ) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
   function handleBoardClick(e: React.MouseEvent<HTMLDivElement, MouseEvent>) {
     let target = (e.target as HTMLElement).closest(".space");
     // If no target was found, return
@@ -80,6 +144,8 @@ export function Game({ roomID, username }: GameProps) {
     const newMap = new Map(boardPosToHeldTileMap);
     // If tile is selected, attempt to place at board pos or replace tile at board pos
     if (selectedTileIndex !== -1) {
+      if (!validBoardPlacement(boardPos)) return;
+      // Place piece in hover state on board
       newMap.set(boardPos, selectedTileIndex);
       // Reset selected tile
       selectTileIndex(-1);
@@ -89,6 +155,7 @@ export function Game({ roomID, username }: GameProps) {
       // Remove board pos if contained in map
       newMap.delete(boardPos);
     }
+    // Update board visually
     setBoardPosToHeldTileMap(newMap);
   }
 
