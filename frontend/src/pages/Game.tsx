@@ -71,9 +71,10 @@ export function Game({ roomID, username }: GameProps) {
 
   // TODO: Consider allowing placement anywhere but not allowing for the turn to be played
   function validBoardPlacement(boardPos: number): boolean {
-    // TODO: You cannot place a piece on a spot where another piece exists
+    // Tile is invalid if there is already a tile in that position
+    if (lastJsonMessage.board[boardPos]?.letter !== undefined) return false;
 
-    // Piece is always valid if it is in the center of the board
+    // Tile is always valid if it is in the center of the board
     if (boardPos === 112) {
       return true;
     }
