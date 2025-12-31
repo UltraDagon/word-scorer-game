@@ -22,6 +22,7 @@ export function Game({ roomID, username }: GameProps) {
   const [boardPosToHeldTileMap, setBoardPosToHeldTileMap] = useState(
     new Map<number, number>()
   );
+  const [validTurn, setValidTurn] = useState(false);
 
   let WS_URL;
   if (import.meta.env.DEV) {
@@ -138,7 +139,7 @@ export function Game({ roomID, username }: GameProps) {
     return false;
   }
 
-  const [temp, stemp] = useState("");
+  /** Find all words played during turn */
   function turnWords(newMap: Map<number, number>) {
     const flatBoard: Array<Space> = lastJsonMessage.board;
     // Uses strings so that values are immutable and therefore no duplicates within a set, just be sure to JSON.parse whenever you're using them
@@ -178,7 +179,28 @@ export function Game({ roomID, username }: GameProps) {
       wordIntervals.add(`[${hStart}, ${hEnd}]`);
     }
 
-    stemp(JSON.stringify(Array.from(wordIntervals)));
+    for (let i of wordIntervals) {
+      let interval: Array<number> = JSON.parse(i);
+      // Just in case
+      if (interval[0] === undefined || interval[1] === undefined) continue;
+
+      // If interval is only one tile, it is not a word
+      if (interval[1] - interval[0] === 0) continue;
+
+      // Change step to vertical or horizontal based on interval given
+      let step = (interval[1] - interval[0]) % 15 === 0 ? 15 : 1;
+
+      let currentWord = "";
+      let pos = interval[0];
+      while (pos <= interval[1]) {
+        currentWord += flatBoard[pos]?.letter;
+        pos += step;
+      }
+
+      words.push(currentWord);
+    }
+
+    return words;
   }
 
   function handleBoardClick(e: React.MouseEvent<HTMLDivElement, MouseEvent>) {
@@ -204,7 +226,16 @@ export function Game({ roomID, username }: GameProps) {
     }
     // Update board visually
     setBoardPosToHeldTileMap(newMap);
-    turnWords(newMap);
+
+    // Check to ensure turn is valid
+    let wordsPlayed = turnWords(newMap);
+    let invalidTurnReason = "";
+    if (wordsPlayed.length === 0) {
+      invalidTurnReason += `Words must be 2 letters or longer`;
+    }
+    // TODO: all words played are in WORD_LIST
+
+    setValidTurn(invalidTurnReason.length === 0);
   }
 
   // Ensure connection to server is established
@@ -248,7 +279,7 @@ export function Game({ roomID, username }: GameProps) {
         </div>
 
         <p>{lastJsonMessage.userData.tiles.length > 0 ? "Held Tiles:" : ""}</p>
-        <p>{temp}</p>
+
         <p>
           boardPosToHeldTileMap:{" "}
           {JSON.stringify(Object.fromEntries(boardPosToHeldTileMap))}
@@ -273,8 +304,8 @@ export function Game({ roomID, username }: GameProps) {
           ))}
         </div>
 
-        <button onClick={() => endTurn()}>
-          <h1>End turn</h1>
+        <button disabled={!validTurn} onClick={() => endTurn()}>
+          <h1>End turn{validTurn ? "t" : "f"}</h1>
         </button>
 
         <button onClick={() => messageAPI("page_loaded")}>
