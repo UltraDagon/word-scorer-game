@@ -13,7 +13,11 @@ import {
   WSMessage,
 } from "../../../backend/interfaces";
 
+import { WORD_LIST } from "../../../backend/dictionary";
+
 export function Game({ roomID, username }: GameProps) {
+  console.log(JSON.stringify(WORD_LIST));
+
   const [selectedTileIndex, selectTileIndex] = useState(-1);
   const [boardPosToHeldTileMap, setBoardPosToHeldTileMap] = useState(
     new Map<number, number>()
@@ -134,14 +138,56 @@ export function Game({ roomID, username }: GameProps) {
     return false;
   }
 
+  const [temp, stemp] = useState("");
+  function turnWords(newMap: Map<number, number>) {
+    const flatBoard: Array<Space> = lastJsonMessage.board;
+    // Uses strings so that values are immutable and therefore no duplicates within a set, just be sure to JSON.parse whenever you're using them
+    const wordIntervals: Set<string> = new Set();
+    const words: Array<string> = new Array();
+
+    // Flatten board to act as if played tiles are hard set onto the board
+    for (let spacePos of newMap.keys()) {
+      flatBoard[spacePos]!.letter =
+        lastJsonMessage.userData.tiles[newMap.get(Number(spacePos)) || 0];
+    }
+
+    // Find words based on tiles connected to played tiles
+    for (let spacePos of newMap.keys()) {
+      // Word interval checking for horizontal and vertical
+      let vStart: number = spacePos;
+      let vEnd: number = spacePos;
+      let hStart: number = spacePos;
+      let hEnd: number = spacePos;
+      // Check if interval start/end goes out of bounds or runs into a blank space
+      while (vStart - 15 > 0 && flatBoard[vStart - 15]!.letter !== undefined)
+        vStart -= 15;
+
+      while (vEnd + 15 <= 225 && flatBoard[vEnd + 15]!.letter !== undefined)
+        vEnd += 15;
+
+      while (
+        (hStart % 15) - 1 > 0 &&
+        flatBoard[hStart - 1]!.letter !== undefined
+      )
+        hStart -= 1;
+
+      while (hEnd % 15 != 14 && flatBoard[hEnd + 1]!.letter !== undefined)
+        hEnd += 1;
+
+      wordIntervals.add(`[${vStart}, ${vEnd}]`);
+      wordIntervals.add(`[${hStart}, ${hEnd}]`);
+    }
+
+    stemp(JSON.stringify(Array.from(wordIntervals)));
+  }
+
   function handleBoardClick(e: React.MouseEvent<HTMLDivElement, MouseEvent>) {
     let target = (e.target as HTMLElement).closest(".space");
     // If no target was found, return
+    // TODO: If not user's turn, return
     if (!target) return;
     let boardPos = Number(target.getAttribute("data-index") || "0");
 
-    // TODO: If not user's turn, return
-    // TODO: If space is taken up on gameData, return
     const newMap = new Map(boardPosToHeldTileMap);
     // If tile is selected, attempt to place at board pos or replace tile at board pos
     if (selectedTileIndex !== -1) {
@@ -158,6 +204,7 @@ export function Game({ roomID, username }: GameProps) {
     }
     // Update board visually
     setBoardPosToHeldTileMap(newMap);
+    turnWords(newMap);
   }
 
   // Ensure connection to server is established
@@ -201,6 +248,11 @@ export function Game({ roomID, username }: GameProps) {
         </div>
 
         <p>{lastJsonMessage.userData.tiles.length > 0 ? "Held Tiles:" : ""}</p>
+        <p>{temp}</p>
+        <p>
+          boardPosToHeldTileMap:{" "}
+          {JSON.stringify(Object.fromEntries(boardPosToHeldTileMap))}
+        </p>
         <div className="held-tiles">
           {lastJsonMessage.userData.tiles.map((tile, index) => (
             <div
@@ -229,7 +281,6 @@ export function Game({ roomID, username }: GameProps) {
           <h1>Re-send page loaded</h1>
         </button>
 
-        <p>{JSON.stringify(Object.fromEntries(boardPosToHeldTileMap))}</p>
         <UserList
           users={lastJsonMessage.users || []}
           roomID={lastJsonMessage.roomID}
