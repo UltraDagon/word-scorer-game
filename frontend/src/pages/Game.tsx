@@ -22,7 +22,7 @@ export function Game({ roomID, username }: GameProps) {
   const [boardPosToHeldTileMap, setBoardPosToHeldTileMap] = useState(
     new Map<number, number>()
   );
-  const [validTurn, setValidTurn] = useState(false);
+  const [invalidTurnMessage, setInvalidTurnMessage] = useState("");
 
   let WS_URL;
   if (import.meta.env.DEV) {
@@ -233,9 +233,16 @@ export function Game({ roomID, username }: GameProps) {
     if (wordsPlayed.length === 0) {
       invalidTurnReason += `Words must be 2 letters or longer`;
     }
-    // TODO: all words played are in WORD_LIST
+    // Check to ensure all words played are in WORD_LIST
+    for (let word of wordsPlayed) {
+      if (!WORD_LIST.has(word))
+        invalidTurnReason +=
+          invalidTurnReason.length === 0
+            ? `Invalid word(s): ${word}`
+            : `, ${word}`;
+    }
 
-    setValidTurn(invalidTurnReason.length === 0);
+    setInvalidTurnMessage(invalidTurnReason);
   }
 
   // Ensure connection to server is established
@@ -280,10 +287,10 @@ export function Game({ roomID, username }: GameProps) {
 
         <p>{lastJsonMessage.userData.tiles.length > 0 ? "Held Tiles:" : ""}</p>
 
-        <p>
+        {/* <p>
           boardPosToHeldTileMap:{" "}
           {JSON.stringify(Object.fromEntries(boardPosToHeldTileMap))}
-        </p>
+        </p> */}
         <div className="held-tiles">
           {lastJsonMessage.userData.tiles.map((tile, index) => (
             <div
@@ -304,9 +311,13 @@ export function Game({ roomID, username }: GameProps) {
           ))}
         </div>
 
-        <button disabled={!validTurn} onClick={() => endTurn()}>
-          <h1>End turn{validTurn ? "t" : "f"}</h1>
+        <button
+          disabled={!(invalidTurnMessage.length === 0)}
+          onClick={() => endTurn()}
+        >
+          <h1>End turn{invalidTurnMessage.length === 0 ? "t" : "f"}</h1>
         </button>
+        <p>{invalidTurnMessage}</p>
 
         <button onClick={() => messageAPI("page_loaded")}>
           <h1>Re-send page loaded</h1>
