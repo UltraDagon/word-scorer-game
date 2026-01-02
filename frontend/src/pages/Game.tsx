@@ -11,18 +11,18 @@ import {
   GameProps,
   Space,
   WSMessage,
+  tileValues,
 } from "../../../backend/interfaces";
 
 import { WORD_LIST } from "../../../backend/dictionary";
 
 export function Game({ roomID, username }: GameProps) {
-  console.log(JSON.stringify(WORD_LIST));
-
   const [selectedTileIndex, selectTileIndex] = useState(-1);
   const [boardPosToHeldTileMap, setBoardPosToHeldTileMap] = useState(
     new Map<number, number>()
   );
   const [invalidTurnMessage, setInvalidTurnMessage] = useState("");
+  const [turnPoints, setTurnPoints] = useState(0);
 
   let WS_URL;
   if (import.meta.env.DEV) {
@@ -72,6 +72,8 @@ export function Game({ roomID, username }: GameProps) {
   function endTurn() {
     messageAPI("play_turn", [...boardPosToHeldTileMap.entries()]);
     setBoardPosToHeldTileMap(new Map<number, number>());
+    setInvalidTurnMessage("It is not currently your turn.");
+    setTurnPoints(0);
   }
 
   // TODO: Consider allowing placement anywhere but not allowing for the turn to be played
@@ -139,12 +141,14 @@ export function Game({ roomID, username }: GameProps) {
     return false;
   }
 
-  /** Find all words played during turn */
-  function turnWords(newMap: Map<number, number>) {
+  /** Update all words played during turn and return the points earned */
+  function turnWordsAndPoints(
+    newMap: Map<number, number>,
+    words: Array<string>
+  ) {
     const flatBoard: Array<Space> = lastJsonMessage.board;
     // Uses strings so that values are immutable and therefore no duplicates within a set, just be sure to JSON.parse whenever you're using them
     const wordIntervals: Set<string> = new Set();
-    const words: Array<string> = new Array();
 
     // Flatten board to act as if played tiles are hard set onto the board
     for (let spacePos of newMap.keys()) {
@@ -179,7 +183,11 @@ export function Game({ roomID, username }: GameProps) {
       wordIntervals.add(`[${hStart}, ${hEnd}]`);
     }
 
+    let points = 0;
     for (let i of wordIntervals) {
+      let wordPoints = 0;
+      let wordPointMult = 1;
+
       let interval: Array<number> = JSON.parse(i);
       // Just in case
       if (interval[0] === undefined || interval[1] === undefined) continue;
@@ -193,14 +201,36 @@ export function Game({ roomID, username }: GameProps) {
       let currentWord = "";
       let pos = interval[0];
       while (pos <= interval[1]) {
+        let letterPoints = tileValues.get(flatBoard[pos]!.letter!) || 0;
+
+        // Implement space effects
+        switch (flatBoard[pos]!.effect) {
+          case "double-letter":
+            letterPoints *= 2;
+            break;
+          case "triple-letter":
+            letterPoints *= 3;
+            break;
+          case "double-word":
+            wordPointMult *= 2;
+            break;
+          case "triple-word":
+            wordPointMult *= 3;
+            break;
+          default:
+            break;
+        }
         currentWord += flatBoard[pos]?.letter;
         pos += step;
+
+        wordPoints += letterPoints;
       }
 
       words.push(currentWord);
+      points += wordPoints * wordPointMult;
     }
 
-    return words;
+    return points;
   }
 
   function handleBoardClick(e: React.MouseEvent<HTMLDivElement, MouseEvent>) {
@@ -227,8 +257,10 @@ export function Game({ roomID, username }: GameProps) {
     // Update board visually
     setBoardPosToHeldTileMap(newMap);
 
-    // Check to ensure turn is valid
-    let wordsPlayed = turnWords(newMap);
+    // Check to ensure turn is valid and add up points scored this turn
+    const wordsPlayed: Array<string> = [];
+    let pointsEarned = turnWordsAndPoints(newMap, wordsPlayed);
+
     let invalidTurnReason = "";
     if (wordsPlayed.length === 0) {
       invalidTurnReason += `Words must be 2 letters or longer`;
@@ -242,6 +274,7 @@ export function Game({ roomID, username }: GameProps) {
             : `, ${word}`;
     }
 
+    setTurnPoints(pointsEarned);
     setInvalidTurnMessage(invalidTurnReason);
   }
 
@@ -272,7 +305,7 @@ export function Game({ roomID, username }: GameProps) {
                 (space.effect ? " effect " + space.effect : "")
               }
             >
-              <p>
+              <p className="main-text">
                 {space.letter
                   ? space.letter
                   : boardPosToHeldTileMap.get(index) !== undefined
@@ -281,16 +314,22 @@ export function Game({ roomID, username }: GameProps) {
                     ]
                   : space.effect?.replace("-", " ").toUpperCase()}
               </p>
+              <p className="point-text">
+                {space.letter || boardPosToHeldTileMap.get(index) !== undefined
+                  ? tileValues.get(
+                      space.letter ||
+                        lastJsonMessage.userData.tiles[
+                          boardPosToHeldTileMap.get(index)!
+                        ]!
+                    ) || ""
+                  : ""}
+              </p>
             </div>
           ))}
         </div>
 
         <p>{lastJsonMessage.userData.tiles.length > 0 ? "Held Tiles:" : ""}</p>
 
-        {/* <p>
-          boardPosToHeldTileMap:{" "}
-          {JSON.stringify(Object.fromEntries(boardPosToHeldTileMap))}
-        </p> */}
         <div className="held-tiles">
           {lastJsonMessage.userData.tiles.map((tile, index) => (
             <div
@@ -306,7 +345,8 @@ export function Game({ roomID, username }: GameProps) {
                 selectTileIndex(index != selectedTileIndex ? index : -1)
               }
             >
-              <p>{tile}</p>
+              <p className="main-text">{tile}</p>
+              <p className="point-text">{tileValues.get(tile)}</p>
             </div>
           ))}
         </div>
@@ -315,9 +355,12 @@ export function Game({ roomID, username }: GameProps) {
           disabled={!(invalidTurnMessage.length === 0)}
           onClick={() => endTurn()}
         >
-          <h1>End turn{invalidTurnMessage.length === 0 ? "t" : "f"}</h1>
+          <h1>End turn ({turnPoints} points)</h1>
         </button>
-        <p>{invalidTurnMessage}</p>
+        <p>
+          {invalidTurnMessage}
+          {invalidTurnMessage.length === 0 ? "t" : "f"}
+        </p>
 
         <button onClick={() => messageAPI("page_loaded")}>
           <h1>Re-send page loaded</h1>
