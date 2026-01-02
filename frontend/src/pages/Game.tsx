@@ -16,6 +16,75 @@ import {
 
 import { WORD_LIST } from "../../../backend/dictionary";
 
+// TODO: Consider allowing placement anywhere but not allowing for the turn to be played
+function validBoardPlacement(
+  boardPos: number,
+  board: Array<Space>,
+  boardPosToHeldTileMap: Map<number, number>
+): boolean {
+  // Tile is invalid if there is already a tile in that position
+  if (board[boardPos]?.letter !== undefined) return false;
+
+  // Tile is always valid if it is in the center of the board
+  if (boardPos === 112) {
+    return true;
+  }
+
+  // If the second tile is played, make sure it is in the same row or column as the first tile
+  if (boardPosToHeldTileMap.size === 1) {
+    let firstTile = boardPosToHeldTileMap.keys().next().value || -1;
+
+    let baseColumn = firstTile % 15;
+    let baseRow = (firstTile - baseColumn) / 15;
+
+    let newColumn = boardPos % 15;
+    let newRow = (boardPos - newColumn) / 15;
+
+    if (baseColumn !== newColumn && baseRow !== newRow) return false;
+  }
+  // All tiles past the first two should be in the same row or column as all other tiles
+  if (boardPosToHeldTileMap.size > 1) {
+    let firstTile = Number([...boardPosToHeldTileMap.entries()][0]![0]);
+    let secondTile = Number([...boardPosToHeldTileMap.entries()][1]![0]);
+
+    let firstColumn = firstTile % 15;
+    let firstRow = (firstTile - firstColumn) / 15;
+    let secondColumn = secondTile % 15;
+    let secondRow = (secondTile - secondColumn) / 15;
+
+    let newColumn = boardPos % 15;
+    let newRow = (boardPos - newColumn) / 15;
+
+    console.log(
+      `first: [${firstRow}, ${firstColumn}]\nsecond: [${secondRow}, ${secondColumn}]\new: [${newRow}, ${newColumn}]`
+    );
+
+    // Ensure that the newly played tile falls into line with the first two played tiles
+    if (
+      !(
+        (firstColumn == secondColumn && firstColumn == newColumn) ||
+        (firstRow == secondRow && firstRow == newRow)
+      )
+    )
+      return false;
+  }
+
+  // Ensure played tile is adjacent to another tile
+  let adjacentOffsets: Array<number> = [1, -1, 15, -15];
+  for (let x of adjacentOffsets) {
+    let pos: number = boardPos + x;
+
+    if (
+      boardPosToHeldTileMap.get(pos) !== undefined ||
+      board[pos]?.letter !== undefined
+    ) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 export function Game({ roomID, username }: GameProps) {
   const [selectedTileIndex, selectTileIndex] = useState(-1);
   const [boardPosToHeldTileMap, setBoardPosToHeldTileMap] = useState(
@@ -75,71 +144,6 @@ export function Game({ roomID, username }: GameProps) {
     setBoardPosToHeldTileMap(new Map<number, number>());
     setInvalidTurnMessage("It is not currently your turn.");
     setTurnPoints(0);
-  }
-
-  // TODO: Consider allowing placement anywhere but not allowing for the turn to be played
-  function validBoardPlacement(boardPos: number): boolean {
-    // Tile is invalid if there is already a tile in that position
-    if (lastJsonMessage.board[boardPos]?.letter !== undefined) return false;
-
-    // Tile is always valid if it is in the center of the board
-    if (boardPos === 112) {
-      return true;
-    }
-
-    // If the second tile is played, make sure it is in the same row or column as the first tile
-    if (boardPosToHeldTileMap.size === 1) {
-      let firstTile = boardPosToHeldTileMap.keys().next().value || -1;
-
-      let baseColumn = firstTile % 15;
-      let baseRow = (firstTile - baseColumn) / 15;
-
-      let newColumn = boardPos % 15;
-      let newRow = (boardPos - newColumn) / 15;
-
-      if (baseColumn !== newColumn && baseRow !== newRow) return false;
-    }
-    // All tiles past the first two should be in the same row or column as all other tiles
-    if (boardPosToHeldTileMap.size > 1) {
-      let firstTile = Number([...boardPosToHeldTileMap.entries()][0]![0]);
-      let secondTile = Number([...boardPosToHeldTileMap.entries()][1]![0]);
-
-      let firstColumn = firstTile % 15;
-      let firstRow = (firstTile - firstColumn) / 15;
-      let secondColumn = secondTile % 15;
-      let secondRow = (secondTile - secondColumn) / 15;
-
-      let newColumn = boardPos % 15;
-      let newRow = (boardPos - newColumn) / 15;
-
-      console.log(
-        `first: [${firstRow}, ${firstColumn}]\nsecond: [${secondRow}, ${secondColumn}]\new: [${newRow}, ${newColumn}]`
-      );
-
-      // Ensure that the newly played tile falls into line with the first two played tiles
-      if (
-        !(
-          (firstColumn == secondColumn && firstColumn == newColumn) ||
-          (firstRow == secondRow && firstRow == newRow)
-        )
-      )
-        return false;
-    }
-
-    // Ensure played tile is adjacent to another tile
-    let adjacentOffsets: Array<number> = [1, -1, 15, -15];
-    for (let x of adjacentOffsets) {
-      let pos: number = boardPos + x;
-
-      if (
-        boardPosToHeldTileMap.get(pos) !== undefined ||
-        lastJsonMessage.board[pos]?.letter !== undefined
-      ) {
-        return true;
-      }
-    }
-
-    return false;
   }
 
   /** Update all words played during turn and return the points earned */
@@ -244,7 +248,14 @@ export function Game({ roomID, username }: GameProps) {
     const newMap = new Map(boardPosToHeldTileMap);
     // If tile is selected, attempt to place at board pos or replace tile at board pos
     if (selectedTileIndex !== -1) {
-      if (!validBoardPlacement(boardPos)) return;
+      if (
+        !validBoardPlacement(
+          boardPos,
+          lastJsonMessage.board,
+          boardPosToHeldTileMap
+        )
+      )
+        return;
       // Place piece in hover state on board
       newMap.set(boardPos, selectedTileIndex);
       // Reset selected tile

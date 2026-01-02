@@ -83,9 +83,9 @@ const handleMessage = (bytes: Buffer, uuid: string) => {
       // Todo: ensure move is valid (played tiles are connected to previously played tiles)
 
       // Update board spaces to have played tiles
-      for (let i = 0; i < data.length; i++) {
+      for (let i = 0; i < data[0].length; i++) {
         let boardPos = data[0][i][0];
-        let tile = user.tiles[data[i][1]];
+        let tile = user.tiles[data[0][i][1]];
 
         rooms[roomID].board[boardPos].letter = tile;
         rooms[roomID].board[boardPos].owner = uuid;
