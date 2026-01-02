@@ -70,7 +70,8 @@ export function Game({ roomID, username }: GameProps) {
   }
 
   function endTurn() {
-    messageAPI("play_turn", [...boardPosToHeldTileMap.entries()]);
+    // TODO: should just be messageAPI("play_turn", [...boardPosToHeldTileMap.entries()]); where the server also checks how many points the move is worth based on the pieces played, but for now it's just going to be sent by the user
+    messageAPI("play_turn", [[...boardPosToHeldTileMap.entries()], turnPoints]);
     setBoardPosToHeldTileMap(new Map<number, number>());
     setInvalidTurnMessage("It is not currently your turn.");
     setTurnPoints(0);
@@ -357,10 +358,7 @@ export function Game({ roomID, username }: GameProps) {
         >
           <h1>End turn ({turnPoints} points)</h1>
         </button>
-        <p>
-          {invalidTurnMessage}
-          {invalidTurnMessage.length === 0 ? "t" : "f"}
-        </p>
+        <p>{invalidTurnMessage}</p>
 
         <button onClick={() => messageAPI("page_loaded")}>
           <h1>Re-send page loaded</h1>

@@ -6,6 +6,7 @@ export interface User {
   };
   tileLimit: number;
   tiles: Array<string>;
+  score: number;
 }
 
 export interface GameData {

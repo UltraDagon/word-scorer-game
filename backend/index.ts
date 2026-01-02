@@ -76,6 +76,7 @@ const handleMessage = (bytes: Buffer, uuid: string) => {
       user.state = { cursorX: data[0], cursorY: data[1] };
       break;
 
+    // Todo: see endTurn() function in game.tsx
     case "play_turn":
       // Todo: if not users turn, break early
 
@@ -83,14 +84,14 @@ const handleMessage = (bytes: Buffer, uuid: string) => {
 
       // Update board spaces to have played tiles
       for (let i = 0; i < data.length; i++) {
-        let boardPos = data[i][0];
+        let boardPos = data[0][i][0];
         let tile = user.tiles[data[i][1]];
 
         rooms[roomID].board[boardPos].letter = tile;
         rooms[roomID].board[boardPos].owner = uuid;
 
         // Set tile to blank space to be later removed
-        user.tiles[data[i][1]] = " ";
+        user.tiles[data[0][i][1]] = " ";
       }
 
       // Remove all used tiles
@@ -100,6 +101,9 @@ const handleMessage = (bytes: Buffer, uuid: string) => {
 
       // Refill tiles
       refillTiles(user.tiles, user.tileLimit);
+
+      // Update users score
+      user.score += data[1];
       break;
 
     default:
@@ -161,6 +165,7 @@ wsServer.on(
       },
       tileLimit: 7,
       tiles: [],
+      score: 0,
     };
 
     connection.on("message", (message: Buffer) => handleMessage(message, uuid));

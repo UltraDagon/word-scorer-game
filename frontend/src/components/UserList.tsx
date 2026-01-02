@@ -18,8 +18,8 @@ export function UserList({ users, roomID }: props) {
             Object.entries(users).map((user) => {
               return (
                 <li key={user[0]}>
-                  ({user[1].username}) x: {user[1].state.cursorX}, y:{" "}
-                  {user[1].state.cursorY}
+                  ({user[1].username}) {user[1].score} points. x:{" "}
+                  {user[1].state.cursorX}, y: {user[1].state.cursorY}
                 </li>
               );
             })
