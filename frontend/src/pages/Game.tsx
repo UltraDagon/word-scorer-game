@@ -294,8 +294,16 @@ export function Game({ roomID, username }: GameProps) {
   if (lastJsonMessage) {
     let board = lastJsonMessage.board;
 
+    // Todo: remove, this is for development
+    if (
+      lastJsonMessage.userData?.tiles === undefined ||
+      lastJsonMessage.userData.tiles.length === 0
+    ) {
+      messageAPI("page_loaded");
+    }
+
     return (
-      <div className="game">
+      <div className={"game"}>
         <div
           className="board"
           onClick={(e) => {
@@ -340,45 +348,51 @@ export function Game({ roomID, username }: GameProps) {
           ))}
         </div>
 
-        <p>{lastJsonMessage.userData.tiles.length > 0 ? "Held Tiles:" : ""}</p>
+        <div className="info-panel">
+          <p>
+            {lastJsonMessage.userData.tiles.length > 0 ? "Held Tiles:" : ""}
+          </p>
 
-        <div className="held-tiles">
-          {lastJsonMessage.userData.tiles.map((tile, index) => (
-            <div
-              key={index}
-              className={
-                "tile" +
-                (index == selectedTileIndex ? " selected" : "") +
-                (boardPosToHeldTileMap.values().some((value) => value === index)
-                  ? " placed"
-                  : "")
-              }
-              onClick={() =>
-                selectTileIndex(index != selectedTileIndex ? index : -1)
-              }
-            >
-              <p className="main-text">{tile}</p>
-              <p className="point-text">{tileValues.get(tile)}</p>
-            </div>
-          ))}
+          <div className="held-tiles">
+            {lastJsonMessage.userData.tiles.map((tile, index) => (
+              <div
+                key={index}
+                className={
+                  "tile" +
+                  (index == selectedTileIndex ? " selected" : "") +
+                  (boardPosToHeldTileMap
+                    .values()
+                    .some((value) => value === index)
+                    ? " placed"
+                    : "")
+                }
+                onClick={() =>
+                  selectTileIndex(index != selectedTileIndex ? index : -1)
+                }
+              >
+                <p className="main-text">{tile}</p>
+                <p className="point-text">{tileValues.get(tile)}</p>
+              </div>
+            ))}
+          </div>
+
+          <button
+            className="end-turn"
+            disabled={!(invalidTurnMessage.length === 0)}
+            onClick={() => endTurn()}
+          >
+            <h1>
+              {invalidTurnMessage.length === 0
+                ? `End turn (${turnPoints} points)`
+                : invalidTurnMessage}
+            </h1>
+          </button>
+
+          <UserList
+            users={lastJsonMessage.users || []}
+            roomID={lastJsonMessage.roomID}
+          />
         </div>
-
-        <button
-          disabled={!(invalidTurnMessage.length === 0)}
-          onClick={() => endTurn()}
-        >
-          <h1>End turn ({turnPoints} points)</h1>
-        </button>
-        <p>{invalidTurnMessage}</p>
-
-        <button onClick={() => messageAPI("page_loaded")}>
-          <h1>Re-send page loaded</h1>
-        </button>
-
-        <UserList
-          users={lastJsonMessage.users || []}
-          roomID={lastJsonMessage.roomID}
-        />
       </div>
     );
   } else {

@@ -1,17 +1,15 @@
 .user-list {
-  position: absolute;
-  right: 0;
-  top: 0;
+  width: 100%;
+  margin-top: auto;
 
-  width: 16rem;
-
-  background-color: blue;
+  background-color: cyan;
 }
 
 .user-list p {
   justify-self: center;
 
-  line-height: 0.25rem;
+  margin: 0;
+
   font-size: 2rem;
   font-weight: bold;
 }
@@ -20,4 +18,7 @@
   padding-left: 1rem;
 
   list-style-type: none;
+}
+
+@media (orientation: portrait) {
 }

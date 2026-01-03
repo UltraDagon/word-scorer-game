@@ -1,8 +1,8 @@
 .game {
-  display: flexbox;
+  display: flex;
 
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  height: 100%;
 }
 
 .game .board {
@@ -10,11 +10,10 @@
   /* This allows the font size to scale with the container size */
   container-type: inline-size;
 
-  width: 80vh;
-  max-width: 80vw;
+  width: 100%;
   aspect-ratio: 1;
 
-  justify-self: left;
+  align-self: center;
 
   grid-template-columns: repeat(15, 6.667%); /* 6.667% is 1/15 */
   grid-template-rows: repeat(15, 6.667%);
@@ -129,8 +128,23 @@
   }
 }
 
+.info-panel {
+  background-color: lime;
+}
+
+.info-panel button.end-turn {
+  width: 100%;
+}
+
+.info-panel button.end-turn p {
+  font-weight: bolder;
+}
+
 .held-tiles {
-  display: flex;
+  display: inline-block;
+  justify-content: center;
+
+  width: 100%;
 
   background-color: orange;
 }
@@ -138,12 +152,12 @@
 .held-tiles .tile {
   container-type: inline-size;
   cursor: pointer;
+  display: inline-block;
 
-  width: 8vh;
-  max-width: 8vw;
+  width: 5rem;
   aspect-ratio: 1;
 
-  margin: 0 2px 0 2px;
+  margin: 0.5vw;
 
   border-radius: 5px;
 
@@ -188,4 +202,31 @@
   font-size: 40cqw;
   font-family: monospace;
   color: black;
+}
+
+@media (orientation: landscape) {
+  .board {
+    max-width: 100vh;
+  }
+
+  .info-panel {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    min-width: 30%;
+  }
+}
+
+@media (orientation: portrait) {
+  .game {
+    display: block;
+  }
+
+  .info-panel {
+    width: 100%;
+  }
+
+  .info-panel .held-tiles {
+    display: flex;
+  }
 }

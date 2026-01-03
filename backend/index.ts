@@ -230,8 +230,9 @@ function generateBoard(): Array<Space> {
 }
 
 function refillTiles(tiles: Array<string>, tileLimit: number): void {
+  // Todo: Note that there should be 2 ? tiles once the feature is implemented
   let tileBag =
-    "AAAAAAAAABBCCDDDDEEEEEEEEEEEEFFGGGHHIIIIIIIIIJKLLLLMMNNNNNNOOOOOOOOPPQRRRRRRSSSSTTTTTTUUUUVVWWXYYZ??".split(
+    "AAAAAAAAABBCCDDDDEEEEEEEEEEEEFFGGGHHIIIIIIIIIJKLLLLMMNNNNNNOOOOOOOOPPQRRRRRRSSSSTTTTTTUUUUVVWWXYYZ".split(
       ""
     );
 
