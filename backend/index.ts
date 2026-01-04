@@ -59,59 +59,62 @@ const broadcastToRoom = (roomID: string) => {
 const handleMessage = (bytes: Buffer, uuid: string) => {
   const roomID = connections[uuid].room;
   const user = rooms[roomID].users[uuid];
-  const rawMessage: WSMessage = JSON.parse(bytes.toString());
 
-  const message: string = rawMessage.message;
-  const data: any = rawMessage.data;
+  try {
+    const rawMessage: WSMessage = JSON.parse(bytes.toString());
 
-  // Ensure that the data format is known before adding a new case.
-  switch (message) {
-    case "page_loaded":
-      user.state = { cursorX: -1, cursorY: -1 };
-      refillTiles(user.tiles, user.tileLimit);
-      break;
+    const message: string = rawMessage.message;
+    const data: any = rawMessage.data;
 
-    // Todo: Remove mouse_move, it was only for testing
-    case "mouse_move":
-      user.state = { cursorX: data[0], cursorY: data[1] };
-      break;
+    // Dev: Ensure that the data format is known before adding a new case.
+    switch (message) {
+      case "page_loaded":
+        user.state = { cursorX: -1, cursorY: -1 };
+        refillTiles(user.tiles, user.tileLimit);
+        break;
 
-    // Todo: see endTurn() function in game.tsx
-    case "play_turn":
-      // Todo: if not users turn, break early
+      // Todo: Remove mouse_move, it was only for testing
+      case "mouse_move":
+        user.state = { cursorX: data[0], cursorY: data[1] };
+        break;
 
-      // Todo: ensure move is valid (played tiles are connected to previously played tiles)
+      // Todo: see endTurn() function in game.tsx
+      case "play_turn":
+        // Todo: if not users turn, break early
 
-      // Update board spaces to have played tiles
-      for (let i = 0; i < data[0].length; i++) {
-        let boardPos = data[0][i][0];
-        let tile = user.tiles[data[0][i][1]];
+        // Update board spaces to have played tiles
+        for (let i = 0; i < data[0].length; i++) {
+          let boardPos = data[0][i][0];
+          let tile = user.tiles[data[0][i][1]];
 
-        rooms[roomID].board[boardPos].letter = tile;
-        rooms[roomID].board[boardPos].owner = uuid;
+          rooms[roomID].board[boardPos].letter = tile;
+          rooms[roomID].board[boardPos].owner = uuid;
 
-        // Set tile to blank space to be later removed
-        user.tiles[data[0][i][1]] = " ";
-      }
+          // Set tile to blank space to be later removed
+          user.tiles[data[0][i][1]] = " ";
+        }
 
-      // Remove all used tiles
-      for (let i = user.tiles.length - 1; i >= 0; i--) {
-        if (user.tiles[i] === " ") user.tiles.splice(i, 1);
-      }
+        // Remove all used tiles
+        for (let i = user.tiles.length - 1; i >= 0; i--) {
+          if (user.tiles[i] === " ") user.tiles.splice(i, 1);
+        }
 
-      // Refill tiles
-      refillTiles(user.tiles, user.tileLimit);
+        // Refill tiles
+        refillTiles(user.tiles, user.tileLimit);
 
-      // Update users score
-      user.score += data[1];
-      break;
+        // Update users score
+        user.score += data[1];
+        break;
 
-    default:
-      console.log('[WARNING] Unknown message: "' + message + '"');
-      break;
+      default:
+        console.log('[WARNING] Unknown message: "' + message + '"');
+        break;
+    }
+
+    broadcastToRoom(roomID);
+  } catch (e) {
+    console.log(`Error from user "${user.username}" with uuid [${uuid}]: ${e}`);
   }
-
-  broadcastToRoom(roomID);
 };
 
 // On user disconnection
