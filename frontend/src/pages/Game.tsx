@@ -16,11 +16,12 @@ import {
 
 import { WORD_LIST } from "../../../backend/dictionary";
 
-// TODO: Consider allowing placement anywhere but not allowing for the turn to be played
+// TODO: Change to return a invalid board reason, and then add that to invalid turn reason
 function validBoardPlacement(
   board: Array<Space>,
   userTiles: Array<string>,
-  boardPosToHeldTileMap: Map<number, number>
+  boardPosToHeldTileMap: Map<number, number>,
+  wordIntervals: Set<string>
 ): boolean {
   const flatBoard: Array<Space> = getFlatBoard(
     board,
@@ -34,8 +35,8 @@ function validBoardPlacement(
   }
 
   const mapEntries = [...boardPosToHeldTileMap.entries()];
-  // No need to do checks if there are less than 3 tiles played
-  if (mapEntries.length < 3) {
+  // No need to do checks if there are less than 2 tiles played
+  if (mapEntries.length < 2) {
     return true;
   }
 
@@ -54,8 +55,9 @@ function validBoardPlacement(
   for (let i = 0; i < mapEntries.length; i++) {
     let spacePos = mapEntries[i]![0];
 
-    // All played tiles must be adjacent to other tiles
+    // Check if any single tiles are not adjacent to any other tiles
     if (
+      // Todo: make a function for these adjacency checks. Currently they are wrong for left and rightmost positions wrapping to other layers
       flatBoard[spacePos + 1]?.letter === undefined &&
       flatBoard[spacePos - 1]?.letter === undefined &&
       flatBoard[spacePos + 15]?.letter === undefined &&
@@ -77,68 +79,37 @@ function validBoardPlacement(
     }
   }
 
-  // Tiles must be adjacent to other tiles
-  for (let i = 0; i < mapEntries.length; i++) {}
+  // Words must be adjacent to previously played tiles or the center piece.
+  for (let intervalString of wordIntervals) {
+    let interval: Array<number> = JSON.parse(intervalString);
+
+    if (interval[0] === undefined || interval[1] === undefined) continue;
+    // If interval is one tile, don't check it
+    if (interval[1] - interval[0] === 0) continue;
+
+    console.log(interval);
+
+    // Change step to vertical or horizontal based on interval given
+    let step = (interval[1] - interval[0]) % 15 === 0 ? 15 : 1;
+    let pos = interval[0];
+    // Valid if at least one tile on the interval is touching another previously played tile or the center tile
+    let validInterval = false;
+    while (pos <= interval[1]) {
+      if (
+        board[pos + 1]?.letter !== undefined ||
+        board[pos - 1]?.letter !== undefined ||
+        board[pos + 15]?.letter !== undefined ||
+        board[pos - 15]?.letter !== undefined ||
+        pos == 112
+      ) {
+        validInterval = true;
+      }
+      pos += step;
+    }
+    if (!validInterval) return false;
+  }
 
   return true;
-  // // Tile is always valid if it is in the center of the board
-  // if (boardPos === 112) {
-  //   return true;
-  // }
-
-  // // If the second tile is played, make sure it is in the same row or column as the first tile
-  // if (boardPosToHeldTileMap.size === 1) {
-  //   let firstTile = boardPosToHeldTileMap.keys().next().value || -1;
-
-  //   let baseColumn = firstTile % 15;
-  //   let baseRow = (firstTile - baseColumn) / 15;
-
-  //   let newColumn = boardPos % 15;
-  //   let newRow = (boardPos - newColumn) / 15;
-
-  //   if (baseColumn !== newColumn && baseRow !== newRow) return false;
-  // }
-  // // All tiles past the first two should be in the same row or column as all other tiles
-  // if (boardPosToHeldTileMap.size > 1) {
-  //   let firstTile = Number([...boardPosToHeldTileMap.entries()][0]![0]);
-  //   let secondTile = Number([...boardPosToHeldTileMap.entries()][1]![0]);
-
-  //   let firstColumn = firstTile % 15;
-  //   let firstRow = (firstTile - firstColumn) / 15;
-  //   let secondColumn = secondTile % 15;
-  //   let secondRow = (secondTile - secondColumn) / 15;
-
-  //   let newColumn = boardPos % 15;
-  //   let newRow = (boardPos - newColumn) / 15;
-
-  //   console.log(
-  //     `first: [${firstRow}, ${firstColumn}]\nsecond: [${secondRow}, ${secondColumn}]\new: [${newRow}, ${newColumn}]`
-  //   );
-
-  //   // Ensure that the newly played tile falls into line with the first two played tiles
-  //   if (
-  //     !(
-  //       (firstColumn == secondColumn && firstColumn == newColumn) ||
-  //       (firstRow == secondRow && firstRow == newRow)
-  //     )
-  //   )
-  //     return false;
-  // }
-
-  // // Ensure played tile is adjacent to another tile
-  // let adjacentOffsets: Array<number> = [1, -1, 15, -15];
-  // for (let x of adjacentOffsets) {
-  //   let pos: number = boardPos + x;
-
-  //   if (
-  //     boardPosToHeldTileMap.get(pos) !== undefined ||
-  //     board[pos]?.letter !== undefined
-  //   ) {
-  //     return true;
-  //   }
-  // }
-
-  // return false;
 }
 
 function getFlatBoard(
@@ -146,7 +117,7 @@ function getFlatBoard(
   userTiles: Array<string>,
   boardPosToHeldTileMap: Map<number, number>
 ): Array<Space> {
-  const flatBoard: Array<Space> = board;
+  const flatBoard: Array<Space> = structuredClone(board);
   for (let spacePos of boardPosToHeldTileMap.keys()) {
     flatBoard[spacePos]!.letter =
       userTiles[boardPosToHeldTileMap.get(Number(spacePos)) || 0];
@@ -219,11 +190,9 @@ export function Game({ roomID, username }: GameProps) {
   /** Update all words played during turn and return the points earned */
   function turnWordsAndPoints(
     newMap: Map<number, number>,
-    words: Array<string>
+    words: Array<string>,
+    wordIntervals: Set<string>
   ) {
-    // Uses strings so that values are immutable and therefore no duplicates within a set, just be sure to JSON.parse whenever you're using them
-    const wordIntervals: Set<string> = new Set();
-
     // Flatten board to act as if played tiles are hard set onto the board
     const flatBoard: Array<Space> = getFlatBoard(
       lastJsonMessage.board,
@@ -335,7 +304,9 @@ export function Game({ roomID, username }: GameProps) {
 
     // Check to ensure turn is valid and add up points scored this turn
     const wordsPlayed: Array<string> = [];
-    let pointsEarned = turnWordsAndPoints(newMap, wordsPlayed);
+    // Uses strings so that values are immutable and therefore no duplicates within a set, just be sure to JSON.parse whenever you're using them
+    const wordIntervals: Set<string> = new Set();
+    let pointsEarned = turnWordsAndPoints(newMap, wordsPlayed, wordIntervals);
 
     let invalidTurnReason = "";
     if (wordsPlayed.length === 0) {
@@ -353,7 +324,8 @@ export function Game({ roomID, username }: GameProps) {
       !validBoardPlacement(
         lastJsonMessage.board,
         lastJsonMessage.userData.tiles,
-        newMap
+        newMap,
+        wordIntervals
       )
     ) {
       invalidTurnReason +=
