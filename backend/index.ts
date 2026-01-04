@@ -117,7 +117,6 @@ const handleMessage = (bytes: Buffer, uuid: string) => {
 // On user disconnection
 const handleClose = (uuid: string) => {
   const roomID = connections[uuid].room;
-  const user = rooms[roomID].users[uuid];
 
   console.log(`User ${rooms[roomID].users[uuid].username} has disconnected`);
 
@@ -152,7 +151,7 @@ wsServer.on(
 
     // If room doesn't exist, create it
     if (!rooms[cleanedRoomID]) {
-      rooms[cleanedRoomID] = { users: {}, board: generateBoard() };
+      rooms[cleanedRoomID] = { users: {}, board: generateBoard(), turn: -1 };
       console.log(`Created new room [${cleanedRoomID}]!`);
     }
 
