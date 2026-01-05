@@ -14,10 +14,12 @@ export interface GameData {
   users: Record<string, User>;
   board: Array<Space>;
   userData: UserData;
+  turn: number;
 }
 
 export interface UserData {
   tiles: Array<string>;
+  uuid: string;
 }
 
 export interface Room {

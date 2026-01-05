@@ -21,6 +21,7 @@ function validBoardPlacement(
   board: Array<Space>,
   userTiles: Array<string>,
   boardPosToHeldTileMap: Map<number, number>,
+  // Probably abstract wordIntervals to another function so that it can be used by both client and server
   wordIntervals: Set<string>
 ): boolean {
   const flatBoard: Array<Space> = getFlatBoard(
@@ -28,6 +29,8 @@ function validBoardPlacement(
     userTiles,
     boardPosToHeldTileMap
   );
+
+  // TODO:
 
   // Middle space cannot be empty
   if (flatBoard[112]?.letter === undefined) {
@@ -183,7 +186,7 @@ export function Game({ roomID, username }: GameProps) {
     // TODO: should just be messageAPI("play_turn", [...boardPosToHeldTileMap.entries()]); where the server also checks how many points the move is worth based on the pieces played, but for now it's just going to be sent by the user
     messageAPI("play_turn", [[...boardPosToHeldTileMap.entries()], turnPoints]);
     setBoardPosToHeldTileMap(new Map<number, number>());
-    setInvalidTurnMessage("It is not currently your turn.");
+    setInvalidTurnMessage("");
     setTurnPoints(0);
   }
 
@@ -336,8 +339,8 @@ export function Game({ roomID, username }: GameProps) {
     setInvalidTurnMessage(invalidTurnReason);
   }
 
-  // Ensure connection to server is established
   if (lastJsonMessage) {
+    // Ensure connection to server is established
     let board = lastJsonMessage.board;
 
     // Todo: remove, this is for development
@@ -346,6 +349,22 @@ export function Game({ roomID, username }: GameProps) {
       lastJsonMessage.userData.tiles.length === 0
     ) {
       messageAPI("page_loaded");
+    }
+
+    let canEndTurn = invalidTurnMessage.length === 0;
+    let endTurnText = canEndTurn
+      ? `End turn (${turnPoints} points)`
+      : invalidTurnMessage;
+    // If not players turn or the game hasn't started, don't let them make a move
+    if (
+      Object.keys(lastJsonMessage.users)[lastJsonMessage.turn] !==
+      lastJsonMessage.userData.uuid
+    ) {
+      canEndTurn = false;
+      endTurnText =
+        lastJsonMessage.turn === -1
+          ? "Waiting for the game to start..."
+          : "It is not your turn.";
     }
 
     return (
@@ -422,17 +441,21 @@ export function Game({ roomID, username }: GameProps) {
             ))}
           </div>
 
-          <button
-            className="end-turn"
-            disabled={!(invalidTurnMessage.length === 0)}
-            onClick={() => endTurn()}
-          >
-            <h1>
-              {invalidTurnMessage.length === 0
-                ? `End turn (${turnPoints} points)`
-                : invalidTurnMessage}
-            </h1>
-          </button>
+          {lastJsonMessage.turn === -1 &&
+          Object.keys(lastJsonMessage.users)[0] ===
+            lastJsonMessage.userData.uuid ? (
+            <button onClick={() => messageAPI("start_game")}>
+              <h1>Start Game</h1>
+            </button>
+          ) : (
+            <button
+              className="end-turn"
+              disabled={!canEndTurn}
+              onClick={() => endTurn()}
+            >
+              <h1>{endTurnText}</h1>
+            </button>
+          )}
 
           <UserList
             users={lastJsonMessage.users || []}

@@ -38,7 +38,8 @@ const broadcastToRoom = (roomID: string) => {
     users: room.users,
     board: room.board,
     // UserData default values, they will be replaced later
-    userData: { tiles: [] },
+    userData: { tiles: [], uuid: "" },
+    turn: room.turn,
   };
 
   Object.keys(room.users).forEach((uuid) => {
@@ -46,7 +47,7 @@ const broadcastToRoom = (roomID: string) => {
     const user = rooms[roomID].users[uuid];
 
     // Add user-specific data
-    data.userData = { tiles: user.tiles };
+    data.userData = { tiles: user.tiles, uuid: uuid };
 
     // Stringify and send message
     const message = JSON.stringify(data);
@@ -81,6 +82,7 @@ const handleMessage = (bytes: Buffer, uuid: string) => {
       // Todo: see endTurn() function in game.tsx
       case "play_turn":
         // Todo: if not users turn, break early
+        // Todo: validate turn, if it doesn't work, don't play anything
 
         // Update board spaces to have played tiles
         for (let i = 0; i < data[0].length; i++) {
@@ -104,6 +106,17 @@ const handleMessage = (bytes: Buffer, uuid: string) => {
 
         // Update users score
         user.score += data[1];
+
+        // Increment turn, loop if reached end
+        rooms[roomID].turn =
+          (rooms[roomID].turn + 1) % Object.keys(rooms[roomID].users).length;
+        break;
+
+      case "start_game":
+        // If user was the first to join the room, they are the owner
+        if (uuid === Object.keys(rooms[roomID].users)[0])
+          rooms[roomID].turn = 0;
+
         break;
 
       default:
@@ -113,7 +126,9 @@ const handleMessage = (bytes: Buffer, uuid: string) => {
 
     broadcastToRoom(roomID);
   } catch (e) {
-    console.log(`Error from user "${user.username}" with uuid [${uuid}]: ${e}`);
+    console.log(
+      `Error from user "${user.username}" with uuid [${uuid}]:\n${e}`
+    );
   }
 };
 
