@@ -40,6 +40,7 @@ const broadcastToRoom = (roomID: string) => {
     // UserData default values, they will be replaced later
     userData: { tiles: [], uuid: "" },
     turn: room.turn,
+    round: room.round,
   };
 
   Object.keys(room.users).forEach((uuid) => {
@@ -107,9 +108,11 @@ const handleMessage = (bytes: Buffer, uuid: string) => {
         // Update users score
         user.score += data[1];
 
-        // Increment turn, loop if reached end
+        // Increment turn, loop if reached end of players
         rooms[roomID].turn =
           (rooms[roomID].turn + 1) % Object.keys(rooms[roomID].users).length;
+        // If turn loops, increment the round
+        if (rooms[roomID].turn === 0) rooms[roomID].round += 1;
         break;
 
       case "start_game":
@@ -169,7 +172,12 @@ wsServer.on(
 
     // If room doesn't exist, create it
     if (!rooms[cleanedRoomID]) {
-      rooms[cleanedRoomID] = { users: {}, board: generateBoard(), turn: -1 };
+      rooms[cleanedRoomID] = {
+        users: {},
+        board: generateBoard(),
+        turn: -1,
+        round: 1,
+      };
       console.log(`Created new room [${cleanedRoomID}]!`);
     }
 

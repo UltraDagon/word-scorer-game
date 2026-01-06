@@ -460,6 +460,8 @@ export function Game({ roomID, username }: GameProps) {
           <UserList
             users={lastJsonMessage.users || []}
             roomID={lastJsonMessage.roomID}
+            turn={lastJsonMessage.turn}
+            round={lastJsonMessage.round}
           />
         </div>
       </div>

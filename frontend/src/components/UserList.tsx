@@ -5,13 +5,17 @@ import { User } from "../../../backend/interfaces";
 interface props {
   users: Record<string, User>;
   roomID: string;
+  turn: number;
+  round: number;
 }
 
-export function UserList({ users, roomID }: props) {
+export function UserList({ users, roomID, turn, round }: props) {
   return (
     <>
       <div className="user-list">
-        <p>Lobby "{roomID}":</p>
+        <p>
+          Lobby "{roomID}" - Round {round}
+        </p>
         <ul>
           {
             // user[0] is uuid, user[1] is User TODO: possible security issue?

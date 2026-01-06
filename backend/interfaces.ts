@@ -15,6 +15,7 @@ export interface GameData {
   board: Array<Space>;
   userData: UserData;
   turn: number;
+  round: number;
 }
 
 export interface UserData {
@@ -27,6 +28,7 @@ export interface Room {
   board: Array<Space>;
   /** Turn is the index of the user of whos turn it is. If turn is -1, the game has not yet begun */
   turn: number;
+  round: number;
 }
 
 export interface GameProps {
