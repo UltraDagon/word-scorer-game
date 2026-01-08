@@ -72,7 +72,7 @@ const handleMessage = (bytes: Buffer, uuid: string) => {
     switch (message) {
       case "page_loaded":
         user.state = { cursorX: -1, cursorY: -1 };
-        refillTiles(user.tiles, user.tileLimit);
+        refillTiles(user.tiles, roomID, user.tileLimit);
         break;
 
       // Todo: Remove mouse_move, it was only for testing
@@ -103,7 +103,7 @@ const handleMessage = (bytes: Buffer, uuid: string) => {
         }
 
         // Refill tiles
-        refillTiles(user.tiles, user.tileLimit);
+        refillTiles(user.tiles, roomID, user.tileLimit);
 
         // Update users score
         user.score += data[1];
@@ -111,8 +111,20 @@ const handleMessage = (bytes: Buffer, uuid: string) => {
         // Increment turn, loop if reached end of players
         rooms[roomID].turn =
           (rooms[roomID].turn + 1) % Object.keys(rooms[roomID].users).length;
+
         // If turn loops, increment the round
-        if (rooms[roomID].turn === 0) rooms[roomID].round += 1;
+        if (rooms[roomID].turn === 0) {
+          // If it is the final turn of the final round, the game has ended.
+          if (rooms[roomID].round === -1) {
+            rooms[roomID].round = -2;
+            break;
+          }
+          rooms[roomID].round += 1;
+        }
+
+        // Check if the tile bag is empty, if so, the round is now the final round (round -1)
+        if (rooms[roomID].tileBag.length === 0) rooms[roomID].round = -1;
+
         break;
 
       case "start_game":
@@ -177,6 +189,11 @@ wsServer.on(
         board: generateBoard(),
         turn: -1,
         round: 1,
+        // tileBag:
+        //   "AAAAAAAAABBCCDDDDEEEEEEEEEEEEFFGGGHHIIIIIIIIIJKLLLLMMNNNNNNOOOOOOOOPPQRRRRRRSSSSTTTTTTUUUUVVWWXYYZ".split(
+        //     ""
+        //   ),
+        tileBag: "AD".split(""),
       };
       console.log(`Created new room [${cleanedRoomID}]!`);
     }
@@ -254,15 +271,18 @@ function generateBoard(): Array<Space> {
   return board;
 }
 
-function refillTiles(tiles: Array<string>, tileLimit: number): void {
+function refillTiles(
+  tiles: Array<string>,
+  roomID: string,
+  tileLimit: number
+): void {
   // Todo: Note that there should be 2 ? tiles once the feature is implemented
-  let tileBag =
-    "AAAAAAAAABBCCDDDDEEEEEEEEEEEEFFGGGHHIIIIIIIIIJKLLLLMMNNNNNNOOOOOOOOPPQRRRRRRSSSSTTTTTTUUUUVVWWXYYZ".split(
-      ""
-    );
 
-  while (tiles.length < tileLimit) {
+  let tileBag = rooms[roomID].tileBag;
+  while (tiles.length < tileLimit && tileBag.length > 0) {
     let randomIndex = randomInt(tileBag.length);
+
     tiles.push(tileBag[randomIndex]);
+    tileBag.splice(randomIndex, 1);
   }
 }

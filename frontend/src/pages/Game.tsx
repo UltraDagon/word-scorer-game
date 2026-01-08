@@ -344,14 +344,15 @@ export function Game({ roomID, username }: GameProps) {
     let board = lastJsonMessage.board;
 
     // Todo: remove, this is for development
-    if (
-      lastJsonMessage.userData?.tiles === undefined ||
-      lastJsonMessage.userData.tiles.length === 0
-    ) {
-      messageAPI("page_loaded");
-    }
+    // if (
+    //   lastJsonMessage.userData?.tiles === undefined ||
+    //   lastJsonMessage.userData.tiles.length === 0
+    // ) {
+    //   messageAPI("page_loaded");
+    // }
 
-    let canEndTurn = invalidTurnMessage.length === 0;
+    let canEndTurn =
+      invalidTurnMessage.length === 0 && lastJsonMessage.round !== -2;
     let endTurnText = canEndTurn
       ? `End turn (${turnPoints} points)`
       : invalidTurnMessage;
@@ -366,6 +367,7 @@ export function Game({ roomID, username }: GameProps) {
           ? "Waiting for the game to start..."
           : "It is not your turn.";
     }
+    if (lastJsonMessage.round === -2) endTurnText = "Game Over.";
 
     return (
       <div className={"game"}>

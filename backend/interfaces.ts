@@ -29,6 +29,7 @@ export interface Room {
   /** Turn is the index of the user of whos turn it is. If turn is -1, the game has not yet begun */
   turn: number;
   round: number;
+  tileBag: Array<string>;
 }
 
 export interface GameProps {
