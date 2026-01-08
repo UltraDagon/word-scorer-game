@@ -14,7 +14,8 @@ export function UserList({ users, roomID, turn, round }: props) {
     <>
       <div className="user-list">
         <p>
-          Lobby "{roomID}" - {round != -1 ? `Round ${round}` : "Final Round"}
+          Lobby "{roomID}" -{" "}
+          {round != -1 && round != -2 ? `Round ${round}` : "Final Round"}
         </p>
         <ul>
           {

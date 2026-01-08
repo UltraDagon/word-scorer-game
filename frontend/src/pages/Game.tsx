@@ -446,7 +446,10 @@ export function Game({ roomID, username }: GameProps) {
           {lastJsonMessage.turn === -1 &&
           Object.keys(lastJsonMessage.users)[0] ===
             lastJsonMessage.userData.uuid ? (
-            <button onClick={() => messageAPI("start_game")}>
+            <button
+              className="end-turn"
+              onClick={() => messageAPI("start_game")}
+            >
               <h1>Start Game</h1>
             </button>
           ) : (
