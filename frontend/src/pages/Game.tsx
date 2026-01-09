@@ -161,9 +161,9 @@ export function Game({ roomID, username }: GameProps) {
     // Initial Login Message
     messageAPI("page_loaded");
 
-    window.addEventListener("mousemove", (e) => {
-      messageAPI("mouse_move", [e.clientX, e.clientY], true);
-    });
+    // window.addEventListener("mousemove", (e) => {
+    //   messageAPI("mouse_move", [e.clientX, e.clientY], true);
+    // });
   }, []);
 
   function messageAPI(
@@ -335,6 +335,9 @@ export function Game({ roomID, username }: GameProps) {
       invalidTurnReason +=
         (invalidTurnReason.length === 0 ? "" : ", ") + "Invalid tile placement";
     }
+
+    // Allow the player to skip their turn if they desire
+    if (newMap.size === 0) invalidTurnReason = "";
 
     setTurnPoints(pointsEarned);
     setInvalidTurnMessage(invalidTurnReason);

@@ -78,7 +78,7 @@ const handleMessage = (bytes: Buffer, uuid: string) => {
     // Dev: Ensure that the data format is known before adding a new case.
     switch (message) {
       case "page_loaded":
-        refillTiles(user.tiles, roomID, user.tileLimit);
+        //refillTiles(user.tiles, roomID, user.tileLimit);
         break;
 
       // Todo: see endTurn() function in game.tsx
@@ -132,6 +132,15 @@ const handleMessage = (bytes: Buffer, uuid: string) => {
         // If user was the first to join the room, they are the owner
         if (uuid === Object.keys(rooms[roomID].users)[0])
           rooms[roomID].turn = 0;
+
+        // Refill all user's tiles
+        for (let userUuid of Object.keys(rooms[roomID].users)) {
+          refillTiles(
+            rooms[roomID].users[userUuid].tiles,
+            roomID,
+            rooms[roomID].users[userUuid].tileLimit
+          );
+        }
 
         break;
 
