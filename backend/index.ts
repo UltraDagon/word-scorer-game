@@ -78,7 +78,10 @@ const handleMessage = (bytes: Buffer, uuid: string) => {
     // Dev: Ensure that the data format is known before adding a new case.
     switch (message) {
       case "page_loaded":
-        //refillTiles(user.tiles, roomID, user.tileLimit);
+        // If game has started, give new player their tiles
+        if (rooms[roomID].turn !== -1)
+          refillTiles(user.tiles, roomID, user.tileLimit);
+
         break;
 
       // Todo: see endTurn() function in game.tsx

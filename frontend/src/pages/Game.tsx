@@ -160,7 +160,6 @@ export function Game({ roomID, username }: GameProps) {
   useEffect(() => {
     // Initial Login Message
     messageAPI("page_loaded");
-
     // window.addEventListener("mousemove", (e) => {
     //   messageAPI("mouse_move", [e.clientX, e.clientY], true);
     // });
