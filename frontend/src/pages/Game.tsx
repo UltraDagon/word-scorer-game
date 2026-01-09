@@ -3,10 +3,11 @@ import { useState, useEffect, useRef } from "react";
 import throttle from "lodash.throttle";
 
 import { UserList } from "../components/UserList";
+import { GameOverPopup } from "../components/GameOverPopup";
 import "./Game.css";
 
 import {
-  User,
+  PublicUser,
   GameData,
   GameProps,
   Space,
@@ -469,6 +470,7 @@ export function Game({ roomID, username }: GameProps) {
             round={lastJsonMessage.round}
           />
         </div>
+        {/* {lastJsonMessage.round === -2 ? <GameOverPopup /> : ""} */}
       </div>
     );
   } else {

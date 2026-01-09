@@ -1,17 +1,18 @@
-export interface User {
+export interface PrivateUser {
   username: string;
-  state: {
-    cursorX: number;
-    cursorY: number;
-  };
   tileLimit: number;
   tiles: Array<string>;
   score: number;
 }
 
+export interface PublicUser {
+  username: string;
+  score: number;
+}
+
 export interface GameData {
   roomID: string;
-  users: Record<string, User>;
+  users: Record<string, PublicUser>;
   board: Array<Space>;
   userData: UserData;
   turn: number;
@@ -24,7 +25,7 @@ export interface UserData {
 }
 
 export interface Room {
-  users: Record<string, User>;
+  users: Record<string, PrivateUser>;
   board: Array<Space>;
   /** Turn is the index of the user of whos turn it is. If turn is -1, the game has not yet begun */
   turn: number;

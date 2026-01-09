@@ -1,9 +1,9 @@
 import "./UserList.css";
 
-import { User } from "../../../backend/interfaces";
+import { PublicUser } from "../../../backend/interfaces";
 
 interface props {
-  users: Record<string, User>;
+  users: Record<string, PublicUser>;
   roomID: string;
   turn: number;
   round: number;
@@ -23,8 +23,7 @@ export function UserList({ users, roomID, turn, round }: props) {
             Object.entries(users).map((user) => {
               return (
                 <li key={user[0]}>
-                  ({user[1].username}) {user[1].score} points. x:{" "}
-                  {user[1].state.cursorX}, y: {user[1].state.cursorY}
+                  ({user[1].username}) {user[1].score} points.
                 </li>
               );
             })

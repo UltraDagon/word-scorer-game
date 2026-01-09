@@ -6,7 +6,14 @@ import { WebSocketServer, WebSocket } from "ws";
 import { v4 as uuidv4 } from "uuid";
 import url from "url";
 
-import { User, GameData, Room, WSMessage, Space } from "./interfaces.ts";
+import {
+  PrivateUser,
+  PublicUser,
+  GameData,
+  Room,
+  WSMessage,
+  Space,
+} from "./interfaces.ts";
 import { randomInt } from "crypto";
 
 const app = express();
@@ -35,7 +42,7 @@ const broadcastToRoom = (roomID: string) => {
 
   const data: GameData = {
     roomID: roomID,
-    users: room.users,
+    users: room.users as Record<string, PublicUser>,
     board: room.board,
     // UserData default values, they will be replaced later
     userData: { tiles: [], uuid: "" },
@@ -71,13 +78,7 @@ const handleMessage = (bytes: Buffer, uuid: string) => {
     // Dev: Ensure that the data format is known before adding a new case.
     switch (message) {
       case "page_loaded":
-        user.state = { cursorX: -1, cursorY: -1 };
         refillTiles(user.tiles, roomID, user.tileLimit);
-        break;
-
-      // Todo: Remove mouse_move, it was only for testing
-      case "mouse_move":
-        user.state = { cursorX: data[0], cursorY: data[1] };
         break;
 
       // Todo: see endTurn() function in game.tsx
@@ -201,10 +202,6 @@ wsServer.on(
     // Join the room and initialize user data
     rooms[cleanedRoomID].users[uuid] = {
       username: cleanedUsername,
-      state: {
-        cursorX: -1,
-        cursorY: -1,
-      },
       tileLimit: 7,
       tiles: [],
       score: 0,
