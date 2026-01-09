@@ -163,6 +163,12 @@ const handleClose = (uuid: string) => {
 
   console.log(`User ${rooms[roomID].users[uuid].username} has disconnected`);
 
+  // Put player's tiles back into the bag
+  rooms[roomID].tileBag = [
+    ...rooms[roomID].tileBag,
+    ...rooms[roomID].users[uuid].tiles,
+  ];
+
   delete connections[uuid];
   delete rooms[roomID].users[uuid];
 
