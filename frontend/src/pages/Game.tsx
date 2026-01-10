@@ -472,7 +472,11 @@ export function Game({ roomID, username }: GameProps) {
             round={lastJsonMessage.round}
           />
         </div>
-        {/* {lastJsonMessage.round === -2 ? <GameOverPopup /> : ""} */}
+        {lastJsonMessage.round === -2 ? (
+          <GameOverPopup users={lastJsonMessage.users || []} />
+        ) : (
+          ""
+        )}
       </div>
     );
   } else {

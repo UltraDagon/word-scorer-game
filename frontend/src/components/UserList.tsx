@@ -18,16 +18,13 @@ export function UserList({ users, roomID, turn, round }: props) {
           {round != -1 && round != -2 ? `Round ${round}` : "Final Round"}
         </p>
         <ul>
-          {
-            // user[0] is uuid, user[1] is User TODO: possible security issue?
-            Object.entries(users).map((user) => {
-              return (
-                <li key={user[0]}>
-                  ({user[1].username}) {user[1].score} points.
-                </li>
-              );
-            })
-          }
+          {Object.entries(users).map((user) => {
+            return (
+              <li key={user[0]}>
+                ({user[1].username}) {user[1].score} points.
+              </li>
+            );
+          })}
         </ul>
       </div>
     </>
