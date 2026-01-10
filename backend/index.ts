@@ -207,7 +207,7 @@ wsServer.on(
         users: {},
         board: generateBoard(),
         turn: -1,
-        round: 1,
+        round: -1,
         tileBag:
           "AAAAAAAAABBCCDDDDEEEEEEEEEEEEFFGGGHHIIIIIIIIIJKLLLLMMNNNNNNOOOOOOOOPPQRRRRRRSSSSTTTTTTUUUUVVWWXYYZ".split(
             ""
@@ -292,6 +292,7 @@ function refillTiles(
   tileLimit: number
 ): void {
   // Todo: Note that there should be 2 ? tiles once the feature is implemented
+  // Todo: If the tile bag is empty, should refill with random tiles using the natural odds
 
   let tileBag = rooms[roomID].tileBag;
   while (tiles.length < tileLimit && tileBag.length > 0) {
