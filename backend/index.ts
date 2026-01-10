@@ -207,7 +207,7 @@ wsServer.on(
         users: {},
         board: generateBoard(),
         turn: -1,
-        round: -1,
+        round: 1,
         tileBag:
           "AAAAAAAAABBCCDDDDEEEEEEEEEEEEFFGGGHHIIIIIIIIIJKLLLLMMNNNNNNOOOOOOOOPPQRRRRRRSSSSTTTTTTUUUUVVWWXYYZ".split(
             ""

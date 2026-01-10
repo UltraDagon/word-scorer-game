@@ -30,7 +30,7 @@ export function GameOverPopup({ users }: props) {
       <h1>GAME OVER</h1>
       {Object.entries(users)
         .toSorted((a, b) => {
-          return Math.max(a[1].score, b[1].score);
+          return Math.min(a[1].score, b[1].score);
         })
         .map((user, index) => {
           return (
