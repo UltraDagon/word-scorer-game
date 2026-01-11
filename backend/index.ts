@@ -131,6 +131,24 @@ const handleMessage = (bytes: Buffer, uuid: string) => {
 
         break;
 
+      case "swap_tiles":
+        let swappedTiles = data.map((x: number) => user.tiles[x]);
+
+        // Remove all swapped tiles
+        for (let i = user.tiles.length - 1; i >= 0; i--) {
+          if (data.indexOf(i) !== -1) user.tiles.splice(i, 1);
+        }
+
+        let tilesInBag = rooms[roomID].tileBag.length;
+
+        refillTiles(user.tiles, roomID, user.tileLimit);
+
+        // Refill room tilebag with tiles swapped but only up to the amount of tiles available in the bag
+        for (let i = 0; i < Math.min(swappedTiles.length, tilesInBag); i++)
+          rooms[roomID].tileBag.push(swappedTiles[i]);
+
+        break;
+
       case "start_game":
         // If user was the first to join the room, they are the owner
         if (uuid === Object.keys(rooms[roomID].users)[0])
@@ -208,11 +226,11 @@ wsServer.on(
         board: generateBoard(),
         turn: -1,
         round: -1,
-        tileBag:
-          "AAAAAAAAABBCCDDDDEEEEEEEEEEEEFFGGGHHIIIIIIIIIJKLLLLMMNNNNNNOOOOOOOOPPQRRRRRRSSSSTTTTTTUUUUVVWWXYYZ".split(
-            ""
-          ),
-        // tileBag: "AD".split(""),
+        // tileBag:
+        //   "AAAAAAAAABBCCDDDDEEEEEEEEEEEEFFGGGHHIIIIIIIIIJKLLLLMMNNNNNNOOOOOOOOPPQRRRRRRSSSSTTTTTTUUUUVVWWXYYZ".split(
+        //     ""
+        //   ),
+        tileBag: "WORDSARIE".split(""),
       };
       console.log(`Created new room [${cleanedRoomID}]!`);
     }
@@ -295,10 +313,21 @@ function refillTiles(
   // Todo: If the tile bag is empty, should refill with random tiles using the natural odds
 
   let tileBag = rooms[roomID].tileBag;
-  while (tiles.length < tileLimit && tileBag.length > 0) {
-    let randomIndex = randomInt(tileBag.length);
+  while (tiles.length < tileLimit) {
+    // Use tiles from the tilebag first, otherwise use random tiles
+    if (tileBag.length > 0) {
+      let randomIndex = randomInt(tileBag.length);
 
-    tiles.push(tileBag[randomIndex]);
-    tileBag.splice(randomIndex, 1);
+      tiles.push(tileBag[randomIndex]);
+      tileBag.splice(randomIndex, 1);
+    } else {
+      let tileOdds =
+        "AAAAAAAAABBCCDDDDEEEEEEEEEEEEFFGGGHHIIIIIIIIIJKLLLLMMNNNNNNOOOOOOOOPPQRRRRRRSSSSTTTTTTUUUUVVWWXYYZ".split(
+          ""
+        );
+      let randomIndex = randomInt(tileOdds.length);
+
+      tiles.push(tileOdds[randomIndex]);
+    }
   }
 }

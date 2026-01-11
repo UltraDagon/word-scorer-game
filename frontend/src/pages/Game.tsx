@@ -137,6 +137,8 @@ export function Game({ roomID, username }: GameProps) {
   );
   const [invalidTurnMessage, setInvalidTurnMessage] = useState("");
   const [turnPoints, setTurnPoints] = useState(0);
+  const [swappingTiles, setSwappingTiles] = useState(false);
+  const [swappedTiles, setSwappedTiles] = useState(new Array<number>());
 
   let WS_URL;
   if (import.meta.env.DEV) {
@@ -184,7 +186,14 @@ export function Game({ roomID, username }: GameProps) {
 
   function endTurn() {
     // TODO: should just be messageAPI("play_turn", [...boardPosToHeldTileMap.entries()]); where the server also checks how many points the move is worth based on the pieces played, but for now it's just going to be sent by the user
-    messageAPI("play_turn", [[...boardPosToHeldTileMap.entries()], turnPoints]);
+    if (swappingTiles) {
+      messageAPI("swap_tiles", swappedTiles);
+      swapTiles();
+    } else
+      messageAPI("play_turn", [
+        [...boardPosToHeldTileMap.entries()],
+        turnPoints,
+      ]);
     setBoardPosToHeldTileMap(new Map<number, number>());
     setInvalidTurnMessage("");
     setTurnPoints(0);
@@ -342,6 +351,27 @@ export function Game({ roomID, username }: GameProps) {
     setInvalidTurnMessage(invalidTurnReason);
   }
 
+  function swapTiles() {
+    setSwappingTiles(!swappingTiles);
+
+    // Clear variables
+    setBoardPosToHeldTileMap(new Map<number, number>());
+    selectTileIndex(-1);
+    setSwappedTiles(new Array());
+    setInvalidTurnMessage("");
+    setTurnPoints(0);
+  }
+
+  function handleHeldTileClick(index: number) {
+    if (swappingTiles) {
+      let pos = swappedTiles.indexOf(index);
+      if (pos === -1) setSwappedTiles([...swappedTiles, index]);
+      else setSwappedTiles(swappedTiles.toSpliced(pos, 1));
+    } else {
+      selectTileIndex(index != selectedTileIndex ? index : -1);
+    }
+  }
+
   if (lastJsonMessage) {
     // Ensure connection to server is established
     let board = lastJsonMessage.board;
@@ -429,16 +459,17 @@ export function Game({ roomID, username }: GameProps) {
                 key={index}
                 className={
                   "tile" +
-                  (index == selectedTileIndex ? " selected" : "") +
+                  (index == selectedTileIndex ||
+                  swappedTiles.indexOf(index) !== -1
+                    ? " selected"
+                    : "") +
                   (boardPosToHeldTileMap
                     .values()
                     .some((value) => value === index)
                     ? " placed"
                     : "")
                 }
-                onClick={() =>
-                  selectTileIndex(index != selectedTileIndex ? index : -1)
-                }
+                onClick={() => handleHeldTileClick(index)}
               >
                 <p className="main-text">{tile}</p>
                 <p className="point-text">{tileValues.get(tile)}</p>
@@ -464,6 +495,21 @@ export function Game({ roomID, username }: GameProps) {
               <h1>{endTurnText}</h1>
             </button>
           )}
+          <button
+            className="swap-tiles"
+            disabled={false}
+            onClick={() => swapTiles()}
+          >
+            <h1>Swap out tiles</h1>
+            {swappingTiles ? (
+              <p>
+                Swapping tiles is currently enabled, press this button again to
+                disable.
+              </p>
+            ) : (
+              ""
+            )}
+          </button>
 
           <UserList
             users={lastJsonMessage.users || []}
