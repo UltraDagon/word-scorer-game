@@ -376,14 +376,6 @@ export function Game({ roomID, username }: GameProps) {
     // Ensure connection to server is established
     let board = lastJsonMessage.board;
 
-    // Todo: remove, this is for development
-    // if (
-    //   lastJsonMessage.userData?.tiles === undefined ||
-    //   lastJsonMessage.userData.tiles.length === 0
-    // ) {
-    //   messageAPI("page_loaded");
-    // }
-
     let canEndTurn =
       invalidTurnMessage.length === 0 && lastJsonMessage.round !== -2;
     let endTurnText = canEndTurn
@@ -400,6 +392,7 @@ export function Game({ roomID, username }: GameProps) {
           ? "Waiting for the game to start..."
           : "It is not your turn.";
     }
+    if (swappingTiles) endTurnText = "End Turn (Swapping Out Tiles)";
     if (lastJsonMessage.round === -2) endTurnText = "Game Over.";
 
     return (
@@ -449,10 +442,9 @@ export function Game({ roomID, username }: GameProps) {
         </div>
 
         <div className="info-panel">
-          <p>
+          <p className="held-tiles-title">
             {lastJsonMessage.userData.tiles.length > 0 ? "Held Tiles:" : ""}
           </p>
-
           <div className="held-tiles">
             {lastJsonMessage.userData.tiles.map((tile, index) => (
               <div
@@ -497,7 +489,10 @@ export function Game({ roomID, username }: GameProps) {
           )}
           <button
             className="swap-tiles"
-            disabled={false}
+            disabled={
+              Object.keys(lastJsonMessage.users)[lastJsonMessage.turn] !==
+                lastJsonMessage.userData.uuid || lastJsonMessage.round < 0
+            }
             onClick={() => swapTiles()}
           >
             <h1>Swap out tiles</h1>
@@ -526,6 +521,7 @@ export function Game({ roomID, username }: GameProps) {
       </div>
     );
   } else {
+    messageAPI("page_loaded");
     return <p>Loading...</p>;
   }
 }

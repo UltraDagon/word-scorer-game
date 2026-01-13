@@ -24,22 +24,39 @@ function rankingAndSuffix(rank: number): string {
   }
 }
 
+function rankingClass(rank: number): string {
+  switch (rank) {
+    case 0:
+      return "first";
+    case 1:
+      return "second";
+    case 2:
+      return "third";
+    default:
+      return "";
+  }
+}
+
 export function GameOverPopup({ users }: props) {
   return (
     <div className="game-over-popup">
       <h1>GAME OVER</h1>
-      {Object.entries(users)
-        .toSorted((a, b) => {
-          return Math.min(a[1].score, b[1].score);
-        })
-        .map((user, index) => {
-          return (
-            <li key={user[0]}>
-              {rankingAndSuffix(index)}: {user[1].username} -- {user[1].score}{" "}
-              points.
-            </li>
-          );
-        })}
+      <ul>
+        {Object.entries(users)
+          .toSorted((a, b) => {
+            return Math.min(a[1].score, b[1].score);
+          })
+          .map((user, index) => {
+            return (
+              <li key={user[0]}>
+                <p className={rankingClass(index)}>
+                  {rankingAndSuffix(index)}: {user[1].username} /{" "}
+                  {user[1].score} points
+                </p>
+              </li>
+            );
+          })}
+      </ul>
     </div>
   );
 }

@@ -35,6 +35,33 @@
   font-size: 4em;
 }
 
+.game-over-popup ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
 .game-over-popup p {
+  background-color: peachpuff;
+  padding: 0.25em;
+  margin: 0.5em 7.5% 0.5em 7.5%;
+
+  border-radius: 10px;
+
   font-family: Cambria, Cochin, Georgia;
+}
+
+.game-over-popup p.first {
+  background-color: gold;
+  font-size: 1.6em;
+}
+
+.game-over-popup p.second {
+  background-color: silver;
+  font-size: 1.4em;
+}
+
+.game-over-popup p.third {
+  background-color: #cd7f32;
+  font-size: 1.2em;
 }

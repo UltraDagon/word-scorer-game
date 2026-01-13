@@ -1,0 +1,12 @@
+.login-form {
+  margin-left: 1rem;
+}
+
+.login-form p {
+  line-height: 0;
+  margin: 0.5em 0 0.5em 0;
+}
+
+.login-form input {
+  margin: 0 0 0.5em 0;
+}

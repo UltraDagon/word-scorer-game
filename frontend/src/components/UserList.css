@@ -2,23 +2,34 @@
   width: 100%;
   margin-top: auto;
 
-  background-color: cyan;
+  background-color: orange;
 }
 
-.user-list p {
-  justify-self: center;
-
+.user-list .title {
+  width: 100%;
   margin: 0;
 
+  text-align: center;
   font-size: 2rem;
   font-weight: bold;
+  color: peachpuff;
+  background-color: brown;
 }
 
 .user-list ul {
-  padding-left: 1rem;
+  padding: 0 0 0.5em 0;
 
   list-style-type: none;
 }
 
-@media (orientation: portrait) {
+.user-list li p {
+  background-color: peachpuff;
+  padding: 0.25em;
+  margin: 0.5em;
+
+  border-radius: 10px;
+}
+
+.user-list .current-turn p {
+  background-color: yellow;
 }

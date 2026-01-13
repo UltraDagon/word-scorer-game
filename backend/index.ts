@@ -230,7 +230,7 @@ wsServer.on(
         //   "AAAAAAAAABBCCDDDDEEEEEEEEEEEEFFGGGHHIIIIIIIIIJKLLLLMMNNNNNNOOOOOOOOPPQRRRRRRSSSSTTTTTTUUUUVVWWXYYZ".split(
         //     ""
         //   ),
-        tileBag: "WORDSARIE".split(""),
+        tileBag: "WORDSAQ".split(""),
       };
       console.log(`Created new room [${cleanedRoomID}]!`);
     }
