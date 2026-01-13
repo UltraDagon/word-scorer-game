@@ -48,10 +48,11 @@ async function keepAlive() {
     prevKeepAliveTime = new Date().valueOf();
     console.log(
       `${
-        isLocalEnv ? "[NOT REALLY, LOCAL ENV]" : ""
+        isLocalEnv ? "[NOT REALLY, LOCAL ENV] " : ""
       }Keeping render service alive | ${new Date()}`
     );
     // Don't keep it alive if testing during development
+    // Todo: Change link once url is changed
     if (!isLocalEnv) await fetch("https://one-shot-dnd.onrender.com/");
   }
 }
@@ -249,7 +250,7 @@ wsServer.on(
         users: {},
         board: generateBoard(),
         turn: -1,
-        round: -1,
+        round: 1, // -1 to start at final round
         tileBag:
           "AAAAAAAAABBCCDDDDEEEEEEEEEEEEFFGGGHHIIIIIIIIIJKLLLLMMNNNNNNOOOOOOOOPPQRRRRRRSSSSTTTTTTUUUUVVWWXYYZ".split(
             ""
@@ -272,7 +273,7 @@ wsServer.on(
   }
 );
 
-// Create websocket (I think)
+// Create websocket
 server.on("upgrade", (request, socket, head) => {
   // TODO: https://stackoverflow.com/questions/59375013/node-legacy-url-parse-deprecated-what-to-use-instead
   const pathname = url.parse(request.url || "").pathname;
@@ -334,7 +335,6 @@ function refillTiles(
   tileLimit: number
 ): void {
   // Todo: Note that there should be 2 ? tiles once the feature is implemented
-  // Todo: If the tile bag is empty, should refill with random tiles using the natural odds
 
   let tileBag = rooms[roomID].tileBag;
   while (tiles.length < tileLimit) {
