@@ -89,8 +89,6 @@ function validBoardPlacement(
     // If interval is one tile, don't check it
     if (interval[1] - interval[0] === 0) continue;
 
-    console.log(interval);
-
     // Change step to vertical or horizontal based on interval given
     let step = (interval[1] - interval[0]) % 15 === 0 ? 15 : 1;
     let pos = interval[0];

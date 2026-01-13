@@ -5,6 +5,7 @@ import http from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { v4 as uuidv4 } from "uuid";
 import url from "url";
+import * as dotenv from "dotenv";
 
 import {
   PrivateUser,
@@ -15,6 +16,10 @@ import {
   Space,
 } from "./interfaces.ts";
 import { randomInt } from "crypto";
+
+dotenv.config();
+
+const isLocalEnv = process.env.LOCAL === "true";
 
 const app = express();
 const port = process.env.PORT || 8000;
@@ -29,10 +34,27 @@ app.get("/*", (req: Request, res: Response) => {
 
 const server = http.createServer(app);
 
+const keepAliveCooldown = 300000; // 5 minutes
+let prevKeepAliveTime: number = new Date().valueOf() - keepAliveCooldown - 1;
+
 // Websocket stuff
 const wsServer = new WebSocketServer({ noServer: true });
 const connections: Record<string, { socket: WebSocket; room: string }> = {};
 const rooms: Record<string, Room> = {};
+
+// Keeps the render service active on free tier
+async function keepAlive() {
+  if (new Date().valueOf() - keepAliveCooldown > prevKeepAliveTime.valueOf()) {
+    prevKeepAliveTime = new Date().valueOf();
+    console.log(
+      `${
+        isLocalEnv ? "[NOT REALLY, LOCAL ENV]" : ""
+      }Keeping render service alive | ${new Date()}`
+    );
+    // Don't keep it alive if testing during development
+    if (!isLocalEnv) await fetch("https://one-shot-dnd.onrender.com/");
+  }
+}
 
 const broadcastToRoom = (roomID: string) => {
   const room = rooms[roomID];
@@ -68,6 +90,8 @@ const broadcastToRoom = (roomID: string) => {
 const handleMessage = (bytes: Buffer, uuid: string) => {
   const roomID = connections[uuid].room;
   const user = rooms[roomID].users[uuid];
+
+  keepAlive();
 
   try {
     const rawMessage: WSMessage = JSON.parse(bytes.toString());

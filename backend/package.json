@@ -10,6 +10,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "dotenv": "^17.2.3",
     "express": "^4.22.1",
     "node-ts": "^8.0.9",
     "tsx": "^4.21.0",
