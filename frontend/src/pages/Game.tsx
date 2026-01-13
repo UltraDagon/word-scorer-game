@@ -31,8 +31,6 @@ function validBoardPlacement(
     boardPosToHeldTileMap
   );
 
-  // TODO:
-
   // Middle space cannot be empty
   if (flatBoard[112]?.letter === undefined) {
     return false;
@@ -258,9 +256,10 @@ export function Game({ roomID, username }: GameProps) {
       let pos = interval[0];
       while (pos <= interval[1]) {
         let letterPoints = tileValues.get(flatBoard[pos]!.letter!) || 0;
+        let currentLetter = lastJsonMessage.board[pos]!.letter || "";
 
-        // Implement space effects
-        switch (flatBoard[pos]!.effect) {
+        // Implement space effects. Do not count space effects if there is a tile on that space
+        switch (flatBoard[pos]!.effect + currentLetter) {
           case "double-letter":
             letterPoints *= 2;
             break;

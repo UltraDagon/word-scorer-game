@@ -226,11 +226,11 @@ wsServer.on(
         board: generateBoard(),
         turn: -1,
         round: -1,
-        // tileBag:
-        //   "AAAAAAAAABBCCDDDDEEEEEEEEEEEEFFGGGHHIIIIIIIIIJKLLLLMMNNNNNNOOOOOOOOPPQRRRRRRSSSSTTTTTTUUUUVVWWXYYZ".split(
-        //     ""
-        //   ),
-        tileBag: "WORDSAQ".split(""),
+        tileBag:
+          "AAAAAAAAABBCCDDDDEEEEEEEEEEEEFFGGGHHIIIIIIIIIJKLLLLMMNNNNNNOOOOOOOOPPQRRRRRRSSSSTTTTTTUUUUVVWWXYYZ".split(
+            ""
+          ),
+        // tileBag: "WORDSAQ".split(""),
       };
       console.log(`Created new room [${cleanedRoomID}]!`);
     }
