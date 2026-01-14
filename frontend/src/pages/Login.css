@@ -1,12 +1,56 @@
+.login {
+  flex-direction: column;
+}
+
 .login-form {
-  margin-left: 1rem;
+  padding: 1rem;
+  background-color: lightcyan;
+  font-size: 1.5em;
+}
+
+.login-form h1 {
+  font-size: 1.5em;
+  line-height: 1em;
+  margin: 0;
 }
 
 .login-form p {
-  line-height: 0;
+  line-height: 1em;
   margin: 0.5em 0 0.5em 0;
 }
 
 .login-form input {
+  font-size: 1em;
   margin: 0 0 0.5em 0;
+}
+
+.login-form button {
+  margin-top: 0.5em;
+  font-size: 1em;
+}
+
+@media (orientation: landscape) {
+  .login-form-news-container {
+    display: flex;
+    height: calc(100vh - 25.2vw);
+  }
+
+  .login .title {
+    width: 40%;
+    padding: 0 30% 0 30%;
+  }
+
+  .login-form {
+    width: 50%;
+  }
+
+  .news {
+    width: 50%;
+  }
+}
+
+@media (orientation: portrait) {
+  .login .title {
+    width: 100%;
+  }
 }

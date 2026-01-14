@@ -25,7 +25,7 @@ export function UserList({
     <>
       <div className="user-list">
         <p className="title">
-          Lobby "{roomID}" -{" "}
+          Room "{roomID}" -{" "}
           {round != -1 && round != -2 ? `Round ${round}` : "Final Round"}
         </p>
         <ul>

@@ -529,7 +529,7 @@ export function Game({ roomID, username }: GameProps) {
       </div>
     );
   } else {
-    messageAPI("page_loaded");
+    //messageAPI("page_loaded");
     return <p>Loading...</p>;
   }
 }

@@ -1,0 +1,43 @@
+.login .title {
+  padding-top: 3vw;
+  padding-bottom: 3vw;
+
+  container-type: inline-size;
+  display: flex;
+  justify-content: center;
+  flex-flow: row wrap;
+  background-color: darkgreen;
+
+  user-select: none;
+}
+
+.login .title p {
+  display: inline;
+
+  width: 15%;
+  line-height: 15cqw;
+  aspect-ratio: 1;
+  margin: 0.5cqw;
+  /* margin: 0; */
+
+  border-radius: 5px;
+
+  font-family: monospace;
+  font-size: 12cqw;
+  font-weight: 900;
+  text-align: center;
+
+  background-color: peachpuff;
+
+  transition: rotate 0.5s ease-in-out, transform 0.3s ease-in-out;
+}
+
+.login .title p:hover {
+  transform: rotate(-15deg) scale(0.8);
+  rotate: -360deg;
+  transition: rotate 0s ease-in-out, transform 0.2s ease-in-out;
+}
+
+.login .title .break {
+  flex-basis: 100%;
+}

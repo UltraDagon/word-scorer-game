@@ -1,0 +1,12 @@
+.news {
+  position: relative;
+  background-color: lightgoldenrodyellow;
+  padding: 1em;
+  overflow: auto;
+}
+
+.news h1 {
+  margin: 0;
+  font-size: 2.25em;
+  line-height: 1em;
+}
