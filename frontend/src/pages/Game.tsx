@@ -373,6 +373,10 @@ export function Game({ roomID, username }: GameProps) {
     messageAPI("claim_user", uuid);
   }
 
+  function kickUser(uuid: string) {
+    messageAPI("kick_user", uuid);
+  }
+
   if (lastJsonMessage) {
     // Ensure connection to server is established
     let board = lastJsonMessage.board;
@@ -514,6 +518,7 @@ export function Game({ roomID, username }: GameProps) {
             round={lastJsonMessage.round}
             selfUuid={lastJsonMessage.userData.uuid}
             claimUser={claimUser}
+            kickUser={kickUser}
           />
         </div>
         {lastJsonMessage.round === -2 ? (

@@ -231,6 +231,18 @@ const handleMessage = (bytes: Buffer, uuid: string) => {
         removeUser(data);
         break;
 
+      case "kick_user":
+        // If user is not the earliest in the room, they are not allowed to kick other users
+        // Also, if kicked user is not disconnected, they cannot be kicked
+        if (
+          uuid !== Object.keys(rooms[roomID].users)[0] ||
+          rooms[roomID].users[data].connected === true
+        )
+          break;
+
+        removeUser(data);
+        break;
+
       default:
         console.log('[WARNING] Unknown message: "' + message + '"');
         break;
@@ -244,7 +256,7 @@ const handleMessage = (bytes: Buffer, uuid: string) => {
   }
 };
 
-// remove user from room
+// Remove user from room
 const removeUser = (uuid: string) => {
   const roomID = connections[uuid].room;
 
@@ -276,7 +288,11 @@ const handleClose = (uuid: string) => {
   console.log(`User ${rooms[roomID].users[uuid].username} has disconnected`);
 
   // If the game hasn't started, just remove the user from the room
-  if (rooms[roomID].turn === -1) removeUser(uuid);
+  if (rooms[roomID].turn === -1) {
+    removeUser(uuid);
+    broadcastToRoom(roomID);
+    return;
+  }
 
   let connectedUsers = 0;
   for (let user of Object.values(rooms[roomID].users)) {
