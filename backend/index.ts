@@ -275,6 +275,9 @@ const handleClose = (uuid: string) => {
 
   console.log(`User ${rooms[roomID].users[uuid].username} has disconnected`);
 
+  // If the game hasn't started, just remove the user from the room
+  if (rooms[roomID].turn === -1) removeUser(uuid);
+
   let connectedUsers = 0;
   for (let user of Object.values(rooms[roomID].users)) {
     if (user.connected) connectedUsers += 1;
