@@ -137,6 +137,7 @@ const handleMessage = (bytes: Buffer, uuid: string) => {
         // Update users score
         user.score += data[1];
 
+        // TODO: move this to an external function as it's shared between here and swap tiles
         // Increment turn, loop if reached end of players
         rooms[roomID].turn =
           (rooms[roomID].turn + 1) % Object.keys(rooms[roomID].users).length;
@@ -172,6 +173,24 @@ const handleMessage = (bytes: Buffer, uuid: string) => {
         for (let i = 0; i < Math.min(swappedTiles.length, tilesInBag); i++)
           rooms[roomID].tileBag.push(swappedTiles[i]);
 
+        // TODO: move this to an external function as it's shared between here and swap tiles
+        // Increment turn, loop if reached end of players
+        rooms[roomID].turn =
+          (rooms[roomID].turn + 1) % Object.keys(rooms[roomID].users).length;
+
+        // If turn loops, increment the round
+        if (rooms[roomID].turn === 0) {
+          // If it is the final turn of the final round, the game has ended.
+          if (rooms[roomID].round === -1) {
+            rooms[roomID].round = -2;
+            break;
+          }
+          rooms[roomID].round += 1;
+        }
+
+        // Check if the tile bag is empty, if so, the round is now the final round (round -1)
+        if (rooms[roomID].tileBag.length === 0) rooms[roomID].round = -1;
+
         break;
 
       case "start_game":
@@ -190,6 +209,28 @@ const handleMessage = (bytes: Buffer, uuid: string) => {
 
         break;
 
+      case "claim_user":
+        // Prevent claiming if the claimed user is not actually disconnected
+        // Or if the claimee user has any points accumulated
+        if (
+          rooms[roomID].users[data].connected === true ||
+          rooms[roomID].users[uuid].score > 0
+        )
+          break;
+
+        console.log(`User ${uuid} has claimed user ${data}`);
+
+        // Copy disconnected user's data to the claiming user
+        rooms[roomID].users[uuid] = JSON.parse(
+          JSON.stringify(rooms[roomID].users[data])
+        );
+
+        rooms[roomID].users[uuid].connected = true;
+
+        // Remove old user
+        removeUser(data);
+        break;
+
       default:
         console.log('[WARNING] Unknown message: "' + message + '"');
         break;
@@ -203,11 +244,13 @@ const handleMessage = (bytes: Buffer, uuid: string) => {
   }
 };
 
-// On user disconnection
-const handleClose = (uuid: string) => {
+// remove user from room
+const removeUser = (uuid: string) => {
   const roomID = connections[uuid].room;
 
-  console.log(`User ${rooms[roomID].users[uuid].username} has disconnected`);
+  console.log(
+    `User ${rooms[roomID].users[uuid].username} has been removed from room "${roomID}"`
+  );
 
   // Put player's tiles back into the bag
   rooms[roomID].tileBag = [
@@ -220,7 +263,28 @@ const handleClose = (uuid: string) => {
 
   // If room is empty, delete it
   if (Object.keys(rooms[roomID].users).length == 0) {
+    console.log(`Deleted room "${roomID}"`);
     delete rooms[roomID];
+  }
+};
+
+// On user disconnection
+const handleClose = (uuid: string) => {
+  const roomID = connections[uuid].room;
+  rooms[roomID].users[uuid].connected = false;
+
+  console.log(`User ${rooms[roomID].users[uuid].username} has disconnected`);
+
+  let connectedUsers = 0;
+  for (let user of Object.values(rooms[roomID].users)) {
+    if (user.connected) connectedUsers += 1;
+  }
+
+  // If there are no connected users in a room, delete the users and room
+  if (connectedUsers === 0) {
+    for (let user of Object.keys(rooms[roomID].users)) {
+      removeUser(user);
+    }
   }
 
   broadcastToRoom(roomID);
@@ -266,6 +330,7 @@ wsServer.on(
       tileLimit: 7,
       tiles: [],
       score: 0,
+      connected: true,
     };
 
     connection.on("message", (message: Buffer) => handleMessage(message, uuid));

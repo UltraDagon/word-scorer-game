@@ -7,9 +7,18 @@ interface props {
   roomID: string;
   turn: number;
   round: number;
+  selfUuid: string;
+  claimUser: Function;
 }
 
-export function UserList({ users, roomID, turn, round }: props) {
+export function UserList({
+  users,
+  roomID,
+  turn,
+  round,
+  selfUuid,
+  claimUser,
+}: props) {
   return (
     <>
       <div className="user-list">
@@ -25,7 +34,15 @@ export function UserList({ users, roomID, turn, round }: props) {
                 className={turn === index ? "current-turn" : ""}
               >
                 <p>
-                  {user[1].username} / {user[1].score} points{" "}
+                  {user[1].username} / {user[1].score} points
+                  {user[1].connected ? "" : " (Disconnected)"}
+                  {user[1].connected || users[selfUuid]!.score > 0 ? (
+                    ""
+                  ) : (
+                    <button onClick={() => claimUser(user[0])}>
+                      Claim User
+                    </button>
+                  )}
                 </p>
               </li>
             );

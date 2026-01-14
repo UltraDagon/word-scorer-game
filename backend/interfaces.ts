@@ -3,11 +3,13 @@ export interface PrivateUser {
   tileLimit: number;
   tiles: Array<string>;
   score: number;
+  connected: boolean;
 }
 
 export interface PublicUser {
   username: string;
   score: number;
+  connected: boolean;
 }
 
 export interface GameData {

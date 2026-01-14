@@ -369,6 +369,10 @@ export function Game({ roomID, username }: GameProps) {
     }
   }
 
+  function claimUser(uuid: string) {
+    messageAPI("claim_user", uuid);
+  }
+
   if (lastJsonMessage) {
     // Ensure connection to server is established
     let board = lastJsonMessage.board;
@@ -508,6 +512,8 @@ export function Game({ roomID, username }: GameProps) {
             roomID={lastJsonMessage.roomID}
             turn={lastJsonMessage.turn}
             round={lastJsonMessage.round}
+            selfUuid={lastJsonMessage.userData.uuid}
+            claimUser={claimUser}
           />
         </div>
         {lastJsonMessage.round === -2 ? (

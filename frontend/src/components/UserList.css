@@ -33,3 +33,9 @@
 .user-list .current-turn p {
   background-color: yellow;
 }
+
+.user-list button {
+  max-width: 20%;
+  padding: 0;
+  float: right;
+}
