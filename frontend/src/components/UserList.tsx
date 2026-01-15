@@ -13,6 +13,28 @@ interface props {
   kickUser: Function;
 }
 
+function ableToKick(
+  uuid: string,
+  user: PublicUser,
+  selfUuid: string,
+  users: Record<string, PublicUser>
+): boolean {
+  return true;
+
+  // If user is disconnected and self is owner, self can kick
+  if (!user.connected && selfUuid !== Object.keys(users)[0]) return true;
+
+  // If owner is disconnected and self is player two, self can kick
+  if (
+    !user.connected &&
+    uuid === Object.keys(users)[0] &&
+    selfUuid === Object.keys(users)[1]
+  )
+    return true;
+
+  return false;
+}
+
 export function UserList({
   users,
   roomID,
@@ -40,7 +62,7 @@ export function UserList({
                 <p>
                   {user[1].username} / {user[1].score} points
                   {user[1].connected ? "" : " (Disconnected)"}
-                  {!user[1].connected && selfUuid === Object.keys(users)[0] ? (
+                  {ableToKick(user[0], user[1], selfUuid, users) ? (
                     <button onClick={() => kickUser(user[0])}>Kick User</button>
                   ) : (
                     ""

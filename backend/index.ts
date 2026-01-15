@@ -243,11 +243,17 @@ const handleMessage = (bytes: Buffer, uuid: string) => {
         break;
 
       case "kick_user":
-        // If user is not the earliest in the room, they are not allowed to kick other users
-        // Also, if kicked user is not disconnected, they cannot be kicked
         if (
-          uuid !== Object.keys(rooms[roomID].users)[0] ||
-          rooms[roomID].users[data].connected === true
+          // If the kicking user is not the earliest in the room
+          (uuid !== Object.keys(rooms[roomID].users)[0] ||
+            // Or if the kicked user is not disconnected, don't kick
+            rooms[roomID].users[data].connected) &&
+          // If the kicked user is not disconnected
+          (rooms[roomID].users[data].connected ||
+            // Or if the kicked user is not the earliest in the room
+            data !== Object.keys(rooms[roomID].users)[0] ||
+            // Or if the kicking user is not the 2nd earliest in the room
+            uuid !== Object.keys(rooms[roomID].users)[1])
         )
           break;
 
