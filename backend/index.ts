@@ -350,7 +350,7 @@ wsServer.on(
         users: {},
         board: generateBoard(),
         turn: -1,
-        round: -1, // -1 to start at final round
+        round: 1, // -1 to start at final round
         tileBag:
           "AAAAAAAAABBCCDDDDEEEEEEEEEEEEFFGGGHHIIIIIIIIIJKLLLLMMNNNNNNOOOOOOOOPPQRRRRRRSSSSTTTTTTUUUUVVWWXYYZ".split(
             ""

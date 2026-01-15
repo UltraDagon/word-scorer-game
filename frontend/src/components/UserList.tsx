@@ -19,10 +19,8 @@ function ableToKick(
   selfUuid: string,
   users: Record<string, PublicUser>
 ): boolean {
-  return true;
-
   // If user is disconnected and self is owner, self can kick
-  if (!user.connected && selfUuid !== Object.keys(users)[0]) return true;
+  if (!user.connected && selfUuid === Object.keys(users)[0]) return true;
 
   // If owner is disconnected and self is player two, self can kick
   if (
