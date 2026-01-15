@@ -14,7 +14,7 @@ export function News() {
         1/14/2026
         <br />
         Still in pre-release stages! Check{" "}
-        <a href="https://github.com/UltraDagon/word-scorer-game">
+        <a href="https://github.com/UltraDagon/word-scorer-game" target="blank">
           github.com/UltraDagon/word-scorer-game
         </a>{" "}
         for info on the latest changes!
