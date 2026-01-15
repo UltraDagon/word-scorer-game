@@ -7,6 +7,7 @@ interface props {
   roomID: string;
   turn: number;
   round: number;
+  tilesRemaining: number;
   selfUuid: string;
   claimUser: Function;
   kickUser: Function;
@@ -17,6 +18,7 @@ export function UserList({
   roomID,
   turn,
   round,
+  tilesRemaining,
   selfUuid,
   claimUser,
   kickUser,
@@ -55,6 +57,9 @@ export function UserList({
             );
           })}
         </ul>
+        <p className="tiles-remaining">
+          Tiles remaining in bag: {tilesRemaining}
+        </p>
       </div>
     </>
   );

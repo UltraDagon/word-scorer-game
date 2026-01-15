@@ -19,6 +19,7 @@ export interface GameData {
   userData: UserData;
   turn: number;
   round: number;
+  tilesRemaining: number;
 }
 
 export interface UserData {

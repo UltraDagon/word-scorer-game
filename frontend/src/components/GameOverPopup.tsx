@@ -42,9 +42,10 @@ export function GameOverPopup({ users }: props) {
     <div className="game-over-popup">
       <h1>GAME OVER</h1>
       <ul>
+        {/* todo: sorted doesnt work? */}
         {Object.entries(users)
           .toSorted((a, b) => {
-            return Math.min(a[1].score, b[1].score);
+            return b[1].score - a[1].score;
           })
           .map((user, index) => {
             return (

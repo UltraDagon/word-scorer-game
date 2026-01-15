@@ -39,3 +39,7 @@
   padding: 0;
   float: right;
 }
+
+.user-list .tiles-remaining {
+  margin: 0 0 0 0.75em;
+}

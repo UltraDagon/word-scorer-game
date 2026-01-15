@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 import "./Login.css";
-import { SiteTitle } from "../components/WebsiteTitle";
+import { SiteTitle } from "../components/SiteTitle";
 import { News } from "../components/News";
 
 interface props {

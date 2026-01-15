@@ -17,6 +17,18 @@ import {
 
 import { WORD_LIST } from "../../../backend/dictionary";
 
+function emptyAdjacentTiles(pos: number, board: Array<Space>): boolean {
+  if (board[pos + 1]?.letter !== undefined && pos % 15 !== 14) return false;
+  if (board[pos - 1]?.letter !== undefined && pos % 15 !== 0) return false;
+  if (
+    board[pos + 15]?.letter !== undefined ||
+    board[pos - 15]?.letter !== undefined
+  )
+    return false;
+
+  return true;
+}
+
 // TODO: Change to return a invalid board reason, and then add that to invalid turn reason
 function validBoardPlacement(
   board: Array<Space>,
@@ -58,14 +70,7 @@ function validBoardPlacement(
     let spacePos = mapEntries[i]![0];
 
     // Check if any single tiles are not adjacent to any other tiles
-    if (
-      // Todo: make a function for these adjacency checks. Currently they are wrong for left and rightmost positions wrapping to other layers
-      flatBoard[spacePos + 1]?.letter === undefined &&
-      flatBoard[spacePos - 1]?.letter === undefined &&
-      flatBoard[spacePos + 15]?.letter === undefined &&
-      flatBoard[spacePos - 15]?.letter === undefined
-    )
-      return false;
+    if (emptyAdjacentTiles(spacePos, flatBoard)) return false;
 
     if (i > 2) {
       // Tiles must be in the same row or column
@@ -95,13 +100,7 @@ function validBoardPlacement(
     // Valid if at least one tile on the interval is touching another previously played tile or the center tile
     let validInterval = false;
     while (pos <= interval[1]) {
-      if (
-        board[pos + 1]?.letter !== undefined ||
-        board[pos - 1]?.letter !== undefined ||
-        board[pos + 15]?.letter !== undefined ||
-        board[pos - 15]?.letter !== undefined ||
-        pos == 112
-      ) {
+      if (!emptyAdjacentTiles(pos, board) || pos == 112) {
         validInterval = true;
       }
       pos += step;
@@ -216,14 +215,14 @@ export function Game({ roomID, username }: GameProps) {
       let hStart: number = spacePos;
       let hEnd: number = spacePos;
       // Check if interval start/end goes out of bounds or runs into a blank space
-      while (vStart - 15 > 0 && flatBoard[vStart - 15]!.letter !== undefined)
+      while (vStart - 15 >= 0 && flatBoard[vStart - 15]!.letter !== undefined)
         vStart -= 15;
 
       while (vEnd + 15 <= 225 && flatBoard[vEnd + 15]!.letter !== undefined)
         vEnd += 15;
 
       while (
-        (hStart % 15) - 1 > 0 &&
+        (hStart % 15) - 1 >= 0 &&
         flatBoard[hStart - 1]!.letter !== undefined
       )
         hStart -= 1;
@@ -236,6 +235,7 @@ export function Game({ roomID, username }: GameProps) {
     }
 
     let points = 0;
+    console.log(wordIntervals);
     for (let i of wordIntervals) {
       let wordPoints = 0;
       let wordPointMult = 1;
@@ -516,6 +516,7 @@ export function Game({ roomID, username }: GameProps) {
             roomID={lastJsonMessage.roomID}
             turn={lastJsonMessage.turn}
             round={lastJsonMessage.round}
+            tilesRemaining={lastJsonMessage.tilesRemaining}
             selfUuid={lastJsonMessage.userData.uuid}
             claimUser={claimUser}
             kickUser={kickUser}

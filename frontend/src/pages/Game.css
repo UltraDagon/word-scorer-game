@@ -21,6 +21,8 @@
   grid-template-rows: repeat(15, 6.667%);
 
   background-color: white;
+
+  overflow: hidden;
 }
 
 .game .board .space {

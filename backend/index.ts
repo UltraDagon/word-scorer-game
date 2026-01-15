@@ -71,6 +71,7 @@ const broadcastToRoom = (roomID: string) => {
     userData: { tiles: [], uuid: "" },
     turn: room.turn,
     round: room.round,
+    tilesRemaining: room.tileBag.length,
   };
 
   Object.keys(room.users).forEach((uuid) => {
@@ -227,6 +228,8 @@ const handleMessage = (bytes: Buffer, uuid: string) => {
 
         rooms[roomID].users[uuid].connected = true;
 
+        // Todo: reorder users record to match previous order
+
         // Remove old user
         removeUser(data);
         break;
@@ -333,7 +336,7 @@ wsServer.on(
         users: {},
         board: generateBoard(),
         turn: -1,
-        round: 1, // -1 to start at final round
+        round: -1, // -1 to start at final round
         tileBag:
           "AAAAAAAAABBCCDDDDEEEEEEEEEEEEFFGGGHHIIIIIIIIIJKLLLLMMNNNNNNOOOOOOOOPPQRRRRRRSSSSTTTTTTUUUUVVWWXYYZ".split(
             ""
