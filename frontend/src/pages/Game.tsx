@@ -235,7 +235,6 @@ export function Game({ roomID, username }: GameProps) {
     }
 
     let points = 0;
-    console.log(wordIntervals);
     for (let i of wordIntervals) {
       let wordPoints = 0;
       let wordPointMult = 1;

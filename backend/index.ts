@@ -221,17 +221,25 @@ const handleMessage = (bytes: Buffer, uuid: string) => {
 
         console.log(`User ${uuid} has claimed user ${data}`);
 
-        // Copy disconnected user's data to the claiming user
-        rooms[roomID].users[uuid] = JSON.parse(
-          JSON.stringify(rooms[roomID].users[data])
-        );
+        // Remove the claiming user from the room
+        removeUser(uuid, true);
 
+        let oldUsers = Object.entries(rooms[roomID].users);
+
+        // Replace the claimed user's uuid with the claiming user's uuid
+        for (let i = 0; i < oldUsers.length; i++) {
+          // If oldUsers index matches claimed user's uuid
+          if (oldUsers[i][0] === data) {
+            // Replace claimed user id with claiming user's id
+            oldUsers[i][0] = uuid;
+            break;
+          }
+        }
+
+        // Update users to match new claim
+        rooms[roomID].users = Object.fromEntries(oldUsers);
         rooms[roomID].users[uuid].connected = true;
 
-        // Todo: reorder users record to match previous order
-
-        // Remove old user
-        removeUser(data);
         break;
 
       case "kick_user":
@@ -260,7 +268,7 @@ const handleMessage = (bytes: Buffer, uuid: string) => {
 };
 
 // Remove user from room
-const removeUser = (uuid: string) => {
+const removeUser = (uuid: string, keepConnection: boolean = false) => {
   const roomID = connections[uuid].room;
 
   console.log(
@@ -273,7 +281,7 @@ const removeUser = (uuid: string) => {
     ...rooms[roomID].users[uuid].tiles,
   ];
 
-  delete connections[uuid];
+  if (!keepConnection) delete connections[uuid];
   delete rooms[roomID].users[uuid];
 
   // If room is empty, delete it
