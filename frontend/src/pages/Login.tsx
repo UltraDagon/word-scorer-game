@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 import "./Login.css";
-import { Title } from "./../components/title";
+import { SiteTitle } from "../components/WebsiteTitle";
 import { News } from "../components/News";
 
 interface props {
@@ -14,7 +14,7 @@ export function Login({ onSubmit }: props) {
 
   return (
     <div className="login">
-      <Title />
+      <SiteTitle />
       <div className="login-form-news-container">
         <form
           className="login-form"

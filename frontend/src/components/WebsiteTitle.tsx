@@ -1,6 +1,6 @@
-import "./Title.css";
+import "./SiteTitle.css";
 
-export function Title() {
+export function SiteTitle() {
   const title = "WORD SCORER GAME".split("");
   return (
     <div className="title">
