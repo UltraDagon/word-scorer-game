@@ -5,6 +5,7 @@ import http from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { v4 as uuidv4 } from "uuid";
 import url from "url";
+import { randomInt } from "crypto";
 import * as dotenv from "dotenv";
 
 import {
@@ -15,7 +16,10 @@ import {
   WSMessage,
   Space,
 } from "./interfaces.ts";
-import { randomInt } from "crypto";
+
+import { validBoardPlacement, turnWordsAndPoints } from "./functions";
+
+import { WORD_LIST } from "./dictionary.ts";
 
 dotenv.config();
 
@@ -103,6 +107,7 @@ const handleMessage = (bytes: Buffer, uuid: string) => {
 
     // Dev: Ensure that the data format is known before adding a new case.
     switch (message) {
+      // Todo: ensure no duplicates in boardPosToHeldTileMap keys and values
       case "page_loaded":
         // If game has started, give new player their tiles
         if (rooms[roomID].turn !== -1)
@@ -110,21 +115,50 @@ const handleMessage = (bytes: Buffer, uuid: string) => {
 
         break;
 
-      // Todo: see endTurn() function in game.tsx
       case "play_turn":
-        // Todo: if not users turn, break early
-        // Todo: validate turn, if it doesn't work, don't play anything
+        // User cannot play if it is not their turn.
+        if (Object.keys(rooms[roomID].users)[rooms[roomID].turn] !== uuid)
+          break;
+
+        let boardPosToHeldTileMap: Map<number, number> = new Map<
+          number,
+          number
+        >(data);
+
+        const wordsPlayed: Array<string> = [];
+        const wordIntervals: Set<string> = new Set();
+        // Get points earned during turn and update words and wordIntervals for further checks
+        const pointsEarned = turnWordsAndPoints(
+          boardPosToHeldTileMap,
+          wordsPlayed,
+          wordIntervals,
+          rooms[roomID].board,
+          user.tiles
+        );
+
+        if (
+          // Validate tile placement
+          !validBoardPlacement(
+            rooms[roomID].board,
+            user.tiles,
+            boardPosToHeldTileMap,
+            wordIntervals
+          ) ||
+          // Validate words are in dictionary
+          wordsPlayed.some((word) => !WORD_LIST.has(word))
+        )
+          break;
 
         // Update board spaces to have played tiles
-        for (let i = 0; i < data[0].length; i++) {
-          let boardPos = data[0][i][0];
-          let tile = user.tiles[data[0][i][1]];
+        for (let i = 0; i < data.length; i++) {
+          let boardPos = data[i][0];
+          let tile = user.tiles[data[i][1]];
 
           rooms[roomID].board[boardPos].letter = tile;
           rooms[roomID].board[boardPos].owner = uuid;
 
           // Set tile to blank space to be later removed
-          user.tiles[data[0][i][1]] = " ";
+          user.tiles[data[i][1]] = " ";
         }
 
         // Remove all used tiles
@@ -136,7 +170,7 @@ const handleMessage = (bytes: Buffer, uuid: string) => {
         refillTiles(user.tiles, roomID, user.tileLimit);
 
         // Update users score
-        user.score += data[1];
+        user.score += pointsEarned;
 
         // TODO: move this to an external function as it's shared between here and swap tiles
         // Increment turn, loop if reached end of players
@@ -159,6 +193,11 @@ const handleMessage = (bytes: Buffer, uuid: string) => {
         break;
 
       case "swap_tiles":
+        // Todo: (I think, it might be fine) ensure no duplicates in swappedTiles
+        // User cannot swap tiles if it is not their turn.
+        if (Object.keys(rooms[roomID].users)[rooms[roomID].turn] !== uuid)
+          break;
+
         let swappedTiles = data.map((x: number) => user.tiles[x]);
 
         // Remove all swapped tiles
@@ -195,9 +234,10 @@ const handleMessage = (bytes: Buffer, uuid: string) => {
         break;
 
       case "start_game":
-        // If user was the first to join the room, they are the owner
-        if (uuid === Object.keys(rooms[roomID].users)[0])
-          rooms[roomID].turn = 0;
+        // Cannot start game unless user is the earliest in the room
+        if (uuid !== Object.keys(rooms[roomID].users)[0]) break;
+
+        rooms[roomID].turn = 0;
 
         // Refill all user's tiles
         for (let userUuid of Object.keys(rooms[roomID].users)) {
@@ -212,7 +252,7 @@ const handleMessage = (bytes: Buffer, uuid: string) => {
 
       case "claim_user":
         // Prevent claiming if the claimed user is not actually disconnected
-        // Or if the claimee user has any points accumulated
+        // Or if the claiming user has any points accumulated
         if (
           rooms[roomID].users[data].connected === true ||
           rooms[roomID].users[uuid].score > 0

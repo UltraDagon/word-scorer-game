@@ -32,6 +32,7 @@ export interface Room {
   board: Array<Space>;
   /** Turn is the index of the user of whos turn it is. If turn is -1, the game has not yet begun */
   turn: number;
+  /** How many times the turn order has looped, beginning at 1. -1: Final round, -2: Game is over */
   round: number;
   tileBag: Array<string>;
 }

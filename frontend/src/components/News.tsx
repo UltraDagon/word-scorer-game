@@ -3,13 +3,23 @@ import "./News.css";
 export function News() {
   return (
     <div className="news">
-      <h1 className="news-title">News</h1>
+      <h1 className="news-title">News/Updates</h1>
       <p>
-        1/15/2026
+        <b>1/16/2026</b>
+        <br />
+        Ran a playtest with no bugs found! Pretty nice! Getting close, finished
+        the websocket security checks {"("}aside from two small ones that I'll
+        finish tomorrow{")"} so there really isn't too much left before the
+        initial launch. The biggest thing is going to be cookies for unique
+        users as I haven't done anything with cookies before, but I'm sure it'll
+        be fun.
+      </p>
+      <p>
+        <b>1/15/2026</b>
         <br />
         Ran another playtest! Steps left before beta release: create a
         bug/suggestion form, change website address, websocket security checks
-        (especially for score).
+        (especially for score), and cookies to keep track of unique users.
         <br />
         Features and bugs:
         <br />
@@ -24,7 +34,7 @@ export function News() {
         lobby when it was supposed to.
       </p>
       <p>
-        1/14/2026
+        <b>1/14/2026</b>
         <br />
         Still in pre-release stages! Check{" "}
         <a href="https://github.com/UltraDagon/word-scorer-game" target="blank">

@@ -15,115 +15,12 @@ import {
   tileValues,
 } from "../../../backend/interfaces";
 
+import {
+  validBoardPlacement,
+  turnWordsAndPoints,
+} from "../../../backend/functions";
+
 import { WORD_LIST } from "../../../backend/dictionary";
-
-function emptyAdjacentTiles(pos: number, board: Array<Space>): boolean {
-  if (board[pos + 1]?.letter !== undefined && pos % 15 !== 14) return false;
-  if (board[pos - 1]?.letter !== undefined && pos % 15 !== 0) return false;
-  if (
-    board[pos + 15]?.letter !== undefined ||
-    board[pos - 15]?.letter !== undefined
-  )
-    return false;
-
-  return true;
-}
-
-// TODO: Change to return a invalid board reason, and then add that to invalid turn reason
-function validBoardPlacement(
-  board: Array<Space>,
-  userTiles: Array<string>,
-  boardPosToHeldTileMap: Map<number, number>,
-  // Probably abstract wordIntervals to another function so that it can be used by both client and server
-  wordIntervals: Set<string>
-): boolean {
-  const flatBoard: Array<Space> = getFlatBoard(
-    board,
-    userTiles,
-    boardPosToHeldTileMap
-  );
-
-  // Middle space cannot be empty
-  if (flatBoard[112]?.letter === undefined) {
-    return false;
-  }
-
-  const mapEntries = [...boardPosToHeldTileMap.entries()];
-  // No need to do checks if there are less than 2 tiles played
-  if (mapEntries.length < 2) {
-    return true;
-  }
-
-  // Tiles must be in a straight line
-  let firstPos = mapEntries[0]![0];
-  let firstColumn = firstPos % 15;
-  let firstRow = (firstPos - firstColumn) / 15;
-
-  let secondPos = mapEntries[1]![0];
-  let secondColumn = secondPos % 15;
-  let secondRow = (secondPos - secondColumn) / 15;
-
-  // If first and second tile aren't sharing a row/column, invalid turn
-  if (firstColumn !== secondColumn && firstRow !== secondRow) return false;
-
-  for (let i = 0; i < mapEntries.length; i++) {
-    let spacePos = mapEntries[i]![0];
-
-    // Check if any single tiles are not adjacent to any other tiles
-    if (emptyAdjacentTiles(spacePos, flatBoard)) return false;
-
-    if (i > 2) {
-      // Tiles must be in the same row or column
-      let spaceColumn = spacePos % 15;
-      let spaceRow = (spacePos - spaceColumn) / 15;
-
-      // If tile is not in line with the current line established by the first two pieces
-      if (
-        !(firstColumn == secondColumn && firstColumn == spaceColumn) &&
-        !(firstRow == secondRow && firstRow == spaceRow)
-      )
-        return false;
-    }
-  }
-
-  // Words must be adjacent to previously played tiles or the center piece.
-  for (let intervalString of wordIntervals) {
-    let interval: Array<number> = JSON.parse(intervalString);
-
-    if (interval[0] === undefined || interval[1] === undefined) continue;
-    // If interval is one tile, don't check it
-    if (interval[1] - interval[0] === 0) continue;
-
-    // Change step to vertical or horizontal based on interval given
-    let step = (interval[1] - interval[0]) % 15 === 0 ? 15 : 1;
-    let pos = interval[0];
-    // Valid if at least one tile on the interval is touching another previously played tile or the center tile
-    let validInterval = false;
-    while (pos <= interval[1]) {
-      if (!emptyAdjacentTiles(pos, board) || pos == 112) {
-        validInterval = true;
-      }
-      pos += step;
-    }
-    if (!validInterval) return false;
-  }
-
-  return true;
-}
-
-function getFlatBoard(
-  board: Array<Space>,
-  userTiles: Array<string>,
-  boardPosToHeldTileMap: Map<number, number>
-): Array<Space> {
-  const flatBoard: Array<Space> = structuredClone(board);
-  for (let spacePos of boardPosToHeldTileMap.keys()) {
-    flatBoard[spacePos]!.letter =
-      userTiles[boardPosToHeldTileMap.get(Number(spacePos)) || 0];
-  }
-
-  return flatBoard;
-}
 
 export function Game({ roomID, username }: GameProps) {
   const [selectedTileIndex, selectTileIndex] = useState(-1);
@@ -180,115 +77,19 @@ export function Game({ roomID, username }: GameProps) {
   }
 
   function endTurn() {
-    // TODO: should just be messageAPI("play_turn", [...boardPosToHeldTileMap.entries()]); where the server also checks how many points the move is worth based on the pieces played, but for now it's just going to be sent by the user
     if (swappingTiles) {
       messageAPI("swap_tiles", swappedTiles);
       swapTiles();
-    } else
-      messageAPI("play_turn", [
-        [...boardPosToHeldTileMap.entries()],
-        turnPoints,
-      ]);
+    } else messageAPI("play_turn", [...boardPosToHeldTileMap.entries()]);
     setBoardPosToHeldTileMap(new Map<number, number>());
     setInvalidTurnMessage("");
     setTurnPoints(0);
   }
 
-  /** Update all words played during turn and return the points earned */
-  function turnWordsAndPoints(
-    newMap: Map<number, number>,
-    words: Array<string>,
-    wordIntervals: Set<string>
-  ) {
-    // Flatten board to act as if played tiles are hard set onto the board
-    const flatBoard: Array<Space> = getFlatBoard(
-      lastJsonMessage.board,
-      lastJsonMessage.userData.tiles,
-      newMap
-    );
-
-    // Find words based on tiles connected to played tiles
-    for (let spacePos of newMap.keys()) {
-      // Word interval checking for horizontal and vertical
-      let vStart: number = spacePos;
-      let vEnd: number = spacePos;
-      let hStart: number = spacePos;
-      let hEnd: number = spacePos;
-      // Check if interval start/end goes out of bounds or runs into a blank space
-      while (vStart - 15 >= 0 && flatBoard[vStart - 15]!.letter !== undefined)
-        vStart -= 15;
-
-      while (vEnd + 15 <= 225 && flatBoard[vEnd + 15]!.letter !== undefined)
-        vEnd += 15;
-
-      while (
-        (hStart % 15) - 1 >= 0 &&
-        flatBoard[hStart - 1]!.letter !== undefined
-      )
-        hStart -= 1;
-
-      while (hEnd % 15 != 14 && flatBoard[hEnd + 1]!.letter !== undefined)
-        hEnd += 1;
-
-      wordIntervals.add(`[${vStart}, ${vEnd}]`);
-      wordIntervals.add(`[${hStart}, ${hEnd}]`);
-    }
-
-    let points = 0;
-    for (let i of wordIntervals) {
-      let wordPoints = 0;
-      let wordPointMult = 1;
-
-      let interval: Array<number> = JSON.parse(i);
-      // Just in case
-      if (interval[0] === undefined || interval[1] === undefined) continue;
-
-      // If interval is only one tile, it is not a word
-      if (interval[1] - interval[0] === 0) continue;
-
-      // Change step to vertical or horizontal based on interval given
-      let step = (interval[1] - interval[0]) % 15 === 0 ? 15 : 1;
-
-      let currentWord = "";
-      let pos = interval[0];
-      while (pos <= interval[1]) {
-        let letterPoints = tileValues.get(flatBoard[pos]!.letter!) || 0;
-        let currentLetter = lastJsonMessage.board[pos]!.letter || "";
-
-        // Implement space effects. Do not count space effects if there is a tile on that space
-        switch (flatBoard[pos]!.effect + currentLetter) {
-          case "double-letter":
-            letterPoints *= 2;
-            break;
-          case "triple-letter":
-            letterPoints *= 3;
-            break;
-          case "double-word":
-            wordPointMult *= 2;
-            break;
-          case "triple-word":
-            wordPointMult *= 3;
-            break;
-          default:
-            break;
-        }
-        currentWord += flatBoard[pos]?.letter;
-        pos += step;
-
-        wordPoints += letterPoints;
-      }
-
-      words.push(currentWord);
-      points += wordPoints * wordPointMult;
-    }
-
-    return points;
-  }
-
+  // TODO: Should be able to show you if a word is in the dictionary and not keep that info hidden.
   function handleBoardClick(e: React.MouseEvent<HTMLDivElement, MouseEvent>) {
     let target = (e.target as HTMLElement).closest(".space");
     // If no target was found, return
-    // TODO: If not user's turn, return
     if (!target) return;
     let boardPos = Number(target.getAttribute("data-index") || "0");
 
@@ -314,7 +115,13 @@ export function Game({ roomID, username }: GameProps) {
     const wordsPlayed: Array<string> = [];
     // Uses strings so that values are immutable and therefore no duplicates within a set, just be sure to JSON.parse whenever you're using them
     const wordIntervals: Set<string> = new Set();
-    let pointsEarned = turnWordsAndPoints(newMap, wordsPlayed, wordIntervals);
+    let pointsEarned = turnWordsAndPoints(
+      newMap,
+      wordsPlayed,
+      wordIntervals,
+      lastJsonMessage.board,
+      lastJsonMessage.userData.tiles
+    );
 
     let invalidTurnReason = "";
     if (wordsPlayed.length === 0) {
@@ -376,8 +183,8 @@ export function Game({ roomID, username }: GameProps) {
     messageAPI("kick_user", uuid);
   }
 
+  // Ensure connection to server is established
   if (lastJsonMessage) {
-    // Ensure connection to server is established
     let board = lastJsonMessage.board;
 
     let canEndTurn =
@@ -529,7 +336,8 @@ export function Game({ roomID, username }: GameProps) {
       </div>
     );
   } else {
-    //messageAPI("page_loaded");
+    // Line below only needed for testing
+    // messageAPI("page_loaded", undefined, true);
     return <p>Loading...</p>;
   }
 }
