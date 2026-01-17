@@ -3,9 +3,24 @@ import "./News.css";
 export function News() {
   return (
     <div className="news">
+      <h2>
+        Bug reports, suggestions, or other feedback? Let me know{" "}
+        <a href="https://forms.gle/dXF6uDhfCayMGpce9" target="blank">
+          here
+        </a>
+        !
+      </h2>
       <h1 className="news-title">News/Updates</h1>
       <p>
         <b>1/16/2026</b>
+        <br />
+        Should be good to announce! Finished the rest of the security checks,
+        created the feedback form, added the unique user analytics, and migrated
+        to a different website address. There are many more features planned,
+        though updates may be less frequent as I'm returning to college soon.
+      </p>
+      <p>
+        <b>1/15/2026</b>
         <br />
         Ran a playtest with no bugs found! Pretty nice! Getting close, finished
         the websocket security checks {"("}aside from two small ones that I'll
@@ -15,13 +30,14 @@ export function News() {
         be fun.
       </p>
       <p>
-        <b>1/15/2026</b>
+        <b>1/14/2026</b>
         <br />
         Ran another playtest! Steps left before beta release: create a
         bug/suggestion form, change website address, websocket security checks
         (especially for score), and cookies to keep track of unique users.
         <br />
-        Features and bugs:
+        <br />
+        Features and fixed bugs:
         <br />
         - Added the feature for the 2nd earliest player in a lobby to be able to
         kick the owner if the owner disconnects.
@@ -34,7 +50,7 @@ export function News() {
         lobby when it was supposed to.
       </p>
       <p>
-        <b>1/14/2026</b>
+        <b>1/13/2026</b>
         <br />
         Still in pre-release stages! Check{" "}
         <a href="https://github.com/UltraDagon/word-scorer-game" target="blank">

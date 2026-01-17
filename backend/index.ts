@@ -61,6 +61,27 @@ async function keepAlive() {
   }
 }
 
+async function sendNewUserFormResponse(
+  username: string,
+  roomID: string,
+  joinDate: string
+) {
+  const url =
+    "https://docs.google.com/forms/d/e/1FAIpQLSfKDIMKNz2HVDX8dRScGi5x-NNm6ToCSs1LUizdw_vE918WiA/formResponse";
+  const formData = new URLSearchParams({
+    "entry.1689192354": username,
+    "entry.1077222279": roomID,
+    "entry.1811876407": joinDate,
+  });
+
+  await fetch(url, {
+    method: "POST",
+    mode: "no-cors",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: formData.toString(),
+  });
+}
+
 const broadcastToRoom = (roomID: string) => {
   const room = rooms[roomID];
 
@@ -124,6 +145,15 @@ const handleMessage = (bytes: Buffer, uuid: string) => {
           number,
           number
         >(data);
+
+        // Validate that boardPosToHeldTileMap has no duplicate keys or values
+        if (
+          new Set([...boardPosToHeldTileMap.keys()]).size !==
+            boardPosToHeldTileMap.size ||
+          new Set([...boardPosToHeldTileMap.values()]).size !==
+            boardPosToHeldTileMap.size
+        )
+          break;
 
         const wordsPlayed: Array<string> = [];
         const wordIntervals: Set<string> = new Set();
@@ -193,10 +223,12 @@ const handleMessage = (bytes: Buffer, uuid: string) => {
         break;
 
       case "swap_tiles":
-        // Todo: (I think, it might be fine) ensure no duplicates in swappedTiles
         // User cannot swap tiles if it is not their turn.
         if (Object.keys(rooms[roomID].users)[rooms[roomID].turn] !== uuid)
           break;
+
+        // Validate that tile indexes are not duplicated
+        if (new Set(data).size !== data.length) break;
 
         let swappedTiles = data.map((x: number) => user.tiles[x]);
 
@@ -298,6 +330,13 @@ const handleMessage = (bytes: Buffer, uuid: string) => {
           break;
 
         removeUser(data);
+        break;
+
+      case "new_user":
+        console.log("New user!");
+
+        sendNewUserFormResponse(user.username, roomID, data);
+
         break;
 
       default:

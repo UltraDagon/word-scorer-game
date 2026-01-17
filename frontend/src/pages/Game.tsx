@@ -46,7 +46,7 @@ export function Game({ roomID, username }: GameProps) {
     queryParams: { username, roomID },
   });
 
-  const THROTTLE_MS = 100;
+  const THROTTLE_MS = 10000;
   const sendJsonMessageThrottled = useRef(
     throttle(sendJsonMessage, THROTTLE_MS)
   );
@@ -54,6 +54,14 @@ export function Game({ roomID, username }: GameProps) {
   useEffect(() => {
     // Initial Login Message
     messageAPI("page_loaded");
+
+    // If the user is new, notify the server
+    if (document.cookie === "") {
+      let firstLoginDate: string = new Date().toString();
+      document.cookie = `first_login=${firstLoginDate}`;
+      messageAPI("new_user", firstLoginDate, true);
+    }
+
     // window.addEventListener("mousemove", (e) => {
     //   messageAPI("mouse_move", [e.clientX, e.clientY], true);
     // });

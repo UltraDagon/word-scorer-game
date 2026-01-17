@@ -5,7 +5,7 @@ import { Login } from "./pages/Login";
 import { Game } from "./pages/Game";
 
 // Thanks to: https://www.youtube.com/watch?v=4Uwq0xB30JE
-// Note: remove the perfect cursors from packages
+// Todo: remove the perfect cursors from packages
 
 function App() {
   const [username, setUsername] = useState("");
