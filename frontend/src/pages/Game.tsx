@@ -143,16 +143,18 @@ export function Game({ roomID, username }: GameProps) {
             ? `Invalid word(s): ${word}`
             : `, ${word}`;
     }
-    if (
-      !validBoardPlacement(
-        lastJsonMessage.board,
-        lastJsonMessage.userData.tiles,
-        newMap,
-        wordIntervals
-      )
-    ) {
+
+    let invalidBoardPlacementReason = validBoardPlacement(
+      lastJsonMessage.board,
+      lastJsonMessage.userData.tiles,
+      newMap,
+      wordIntervals
+    );
+
+    if (invalidBoardPlacementReason.length > 0) {
       invalidTurnReason +=
-        (invalidTurnReason.length === 0 ? "" : ", ") + "Invalid tile placement";
+        (invalidTurnReason.length === 0 ? "" : ", ") +
+        invalidBoardPlacementReason;
     }
 
     // Allow the player to skip their turn if they desire

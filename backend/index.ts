@@ -168,12 +168,12 @@ const handleMessage = (bytes: Buffer, uuid: string) => {
 
         if (
           // Validate tile placement
-          !validBoardPlacement(
+          validBoardPlacement(
             rooms[roomID].board,
             user.tiles,
             boardPosToHeldTileMap,
             wordIntervals
-          ) ||
+          ).length > 0 ||
           // Validate words are in dictionary
           wordsPlayed.some((word) => !WORD_LIST.has(word))
         )

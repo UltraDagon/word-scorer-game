@@ -12,12 +12,20 @@ export function News() {
       </h2>
       <h1 className="news-title">News/Updates</h1>
       <p>
+        <b>1/19/2026</b>
+        <br />
+        Added more descriptive turn error messages and added a note to the login
+        page being more clear about how rooms work, hoping to release after one
+        final playtest.
+      </p>
+      <p>
         <b>1/16/2026</b>
         <br />
-        Should be good to announce! Finished the rest of the security checks,
-        created the feedback form, added the unique user analytics, and migrated
-        to a different website address. There are many more features planned,
-        though updates may be less frequent as I'm returning to college soon.
+        Should be good to announce after one more playtest! Finished the rest of
+        the security checks, created the feedback form, added the unique user
+        analytics, and migrated to a different website address. There are many
+        more features planned, though updates may be less frequent as I'm
+        returning to college soon.
       </p>
       <p>
         <b>1/15/2026</b>

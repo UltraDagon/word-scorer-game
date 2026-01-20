@@ -8,7 +8,7 @@ export function validBoardPlacement(
   boardPosToHeldTileMap: Map<number, number>,
   // Probably abstract wordIntervals to another function so that it can be used by both client and server
   wordIntervals: Set<string>
-): boolean {
+): string {
   const flatBoard: Array<Space> = getFlatBoard(
     board,
     userTiles,
@@ -17,13 +17,13 @@ export function validBoardPlacement(
 
   // Middle space cannot be empty
   if (flatBoard[112]?.letter === undefined) {
-    return false;
+    return "Center space cannot be empty";
   }
 
   const mapEntries = [...boardPosToHeldTileMap.entries()];
   // No need to do checks if there are less than 2 tiles played
   if (mapEntries.length < 2) {
-    return true;
+    return "";
   }
 
   // Tiles must be in a straight line
@@ -36,7 +36,8 @@ export function validBoardPlacement(
   let secondRow = (secondPos - secondColumn) / 15;
 
   // If first and second tile aren't sharing a row/column, invalid turn
-  if (firstColumn !== secondColumn && firstRow !== secondRow) return false;
+  if (firstColumn !== secondColumn && firstRow !== secondRow)
+    return "Tiles must be placed in a straight line";
 
   for (let i = 0; i < mapEntries.length; i++) {
     let spacePos = mapEntries[i]![0];
@@ -46,7 +47,7 @@ export function validBoardPlacement(
       emptyAdjacentTiles(spacePos, flatBoard) ||
       board[spacePos]?.letter !== undefined
     )
-      return false;
+      return "Tiles must be connected to other tiles";
 
     if (i > 2) {
       // Tiles must be in the same row or column
@@ -58,7 +59,7 @@ export function validBoardPlacement(
         !(firstColumn == secondColumn && firstColumn == spaceColumn) &&
         !(firstRow == secondRow && firstRow == spaceRow)
       )
-        return false;
+        return "Tiles must be placed in a straight line";
     }
   }
 
@@ -81,10 +82,10 @@ export function validBoardPlacement(
       }
       pos += step;
     }
-    if (!validInterval) return false;
+    if (!validInterval) return "Tiles must be placed in a straight line";
   }
 
-  return true;
+  return "";
 }
 
 /** Updates "words" and "wordIntervals" based on words played during turn and return the points earned */

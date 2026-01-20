@@ -35,6 +35,12 @@ export function Login({ onSubmit }: props) {
           />
           <br />
           <p>Enter a Room ID to create/join a room:</p>
+          <p className="small-text">
+            <p>
+              (Putting the same Room ID as someone else will allow you to play
+              together.)
+            </p>
+          </p>
           <input
             type="text"
             value={roomID}
