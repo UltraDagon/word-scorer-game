@@ -53,18 +53,17 @@ async function keepAlive() {
     console.log(
       `${
         isLocalEnv ? "[NOT REALLY, LOCAL ENV] " : ""
-      }Keeping render service alive | ${new Date()}`
+      }Keeping render service alive | ${new Date()}`,
     );
     // Don't keep it alive if testing during development
-    // Todo: Change link once url is changed
-    if (!isLocalEnv) await fetch("https://one-shot-dnd.onrender.com/");
+    if (!isLocalEnv) await fetch("https://word-scorer-game.onrender.com/");
   }
 }
 
 async function sendNewUserFormResponse(
   username: string,
   roomID: string,
-  joinDate: string
+  joinDate: string,
 ) {
   const url =
     "https://docs.google.com/forms/d/e/1FAIpQLSfKDIMKNz2HVDX8dRScGi5x-NNm6ToCSs1LUizdw_vE918WiA/formResponse";
@@ -163,7 +162,7 @@ const handleMessage = (bytes: Buffer, uuid: string) => {
           wordsPlayed,
           wordIntervals,
           rooms[roomID].board,
-          user.tiles
+          user.tiles,
         );
 
         if (
@@ -172,7 +171,7 @@ const handleMessage = (bytes: Buffer, uuid: string) => {
             rooms[roomID].board,
             user.tiles,
             boardPosToHeldTileMap,
-            wordIntervals
+            wordIntervals,
           ).length > 0 ||
           // Validate words are in dictionary
           wordsPlayed.some((word) => !WORD_LIST.has(word))
@@ -276,7 +275,7 @@ const handleMessage = (bytes: Buffer, uuid: string) => {
           refillTiles(
             rooms[roomID].users[userUuid].tiles,
             roomID,
-            rooms[roomID].users[userUuid].tileLimit
+            rooms[roomID].users[userUuid].tileLimit,
           );
         }
 
@@ -347,7 +346,7 @@ const handleMessage = (bytes: Buffer, uuid: string) => {
     broadcastToRoom(roomID);
   } catch (e) {
     console.log(
-      `Error from user "${user.username}" with uuid [${uuid}]:\n${e}`
+      `Error from user "${user.username}" with uuid [${uuid}]:\n${e}`,
     );
   }
 };
@@ -357,7 +356,7 @@ const removeUser = (uuid: string, keepConnection: boolean = false) => {
   const roomID = connections[uuid].room;
 
   console.log(
-    `User ${rooms[roomID].users[uuid].username} has been removed from room "${roomID}"`
+    `User ${rooms[roomID].users[uuid].username} has been removed from room "${roomID}"`,
   );
 
   // Put player's tiles back into the bag
@@ -432,7 +431,7 @@ wsServer.on(
         round: 1, // -1 to start at final round
         tileBag:
           "AAAAAAAAABBCCDDDDEEEEEEEEEEEEFFGGGHHIIIIIIIIIJKLLLLMMNNNNNNOOOOOOOOPPQRRRRRRSSSSTTTTTTUUUUVVWWXYYZ".split(
-            ""
+            "",
           ),
         // tileBag: "WORDSAQ".split(""),
       };
@@ -450,7 +449,7 @@ wsServer.on(
 
     connection.on("message", (message: Buffer) => handleMessage(message, uuid));
     connection.on("close", () => handleClose(uuid));
-  }
+  },
 );
 
 // Create websocket
@@ -512,7 +511,7 @@ function generateBoard(): Array<Space> {
 function refillTiles(
   tiles: Array<string>,
   roomID: string,
-  tileLimit: number
+  tileLimit: number,
 ): void {
   // Todo: Note that there should be 2 ? tiles once the feature is implemented
 
@@ -527,7 +526,7 @@ function refillTiles(
     } else {
       let tileOdds =
         "AAAAAAAAABBCCDDDDEEEEEEEEEEEEFFGGGHHIIIIIIIIIJKLLLLMMNNNNNNOOOOOOOOPPQRRRRRRSSSSTTTTTTUUUUVVWWXYYZ".split(
-          ""
+          "",
         );
       let randomIndex = randomInt(tileOdds.length);
 
